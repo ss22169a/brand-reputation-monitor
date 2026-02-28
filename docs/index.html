@@ -396,7 +396,7 @@
                         <option value="priority">按嚴重性排序</option>
                         <option value="sentiment">按情感排序</option>
                     </select>
-                    <button onclick="exportReport()">📊 導出報告</button>
+                    <button onclick="exportReport()">導出報告</button>
                 </div>
 
                 <div id="reviewsContainer"></div>
@@ -409,7 +409,11 @@
         let currentResults = [];
 
         const PRIORITY_LABELS = {
-            1: '🔴 緊急', 2: '🟠 中等', 3: '🔵 普通', 4: '🟢 低', 5: '🟣 最低'
+            1: '即刻澄清 (Counter-Action)',
+            2: '導引風向 (Steer)',
+            3: '被動觀測 (Monitor)',
+            4: '不予處理 (Ignore)',
+            5: '不予處理 (Ignore)'
         };
 
         const SENTIMENT_LABELS = {
@@ -489,13 +493,13 @@
             let riskClass, riskText;
             if (positiveRatio >= 0.6) {
                 riskClass = 'risk-excellent';
-                riskText = '🟢 優秀';
+                riskText = '優秀';
             } else if (positiveRatio <= 0.4) {
                 riskClass = 'risk-danger';
-                riskText = '🔴 危險';
+                riskText = '危險';
             } else {
                 riskClass = 'risk-normal';
-                riskText = '🟡 一般';
+                riskText = '一般';
             }
 
             statsGrid.innerHTML = `
@@ -504,19 +508,19 @@
                     <div class="risk-badge ${riskClass}">${riskText}</div>
                 </div>
                 <div class="stat-card">
-                    <h3>正面評論</h3>
+                    <h3>正面</h3>
                     <div class="number" style="color: #34c759;">${dist.positive || 0}</div>
                 </div>
                 <div class="stat-card">
-                    <h3>負面評論</h3>
+                    <h3>負面</h3>
                     <div class="number" style="color: #ff3b30;">${dist.negative || 0}</div>
                 </div>
                 <div class="stat-card">
-                    <h3>中立評論</h3>
+                    <h3>中立</h3>
                     <div class="number" style="color: #ff9500;">${dist.neutral || 0}</div>
                 </div>
                 <div class="stat-card">
-                    <h3>總評論數</h3>
+                    <h3>總計</h3>
                     <div class="number">${data.total_reviews}</div>
                 </div>
             `;
@@ -572,7 +576,7 @@
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['🔴 緊急', '🟠 中等', '🔵 普通', '🟢 低', '🟣 最低'],
+                    labels: ['即刻澄清', '導引風向', '被動觀測', '不予處理', '不予處理'],
                     datasets: [{
                         label: '評論數',
                         data: [distribution['1'] || 0, distribution['2'] || 0, distribution['3'] || 0, distribution['4'] || 0, distribution['5'] || 0],
@@ -623,11 +627,11 @@
                     <div class="review-item">
                         <div class="review-header">
                             <div>
-                                <strong>${escapeHtml(review.title || review.content.substring(0, 40))}</strong>
-                                <div style="margin-top: 6px; display: flex; gap: 8px;">
+                                <div style="margin-bottom: 8px; display: flex; gap: 12px; align-items: center;">
+                                    <span style="color: #555; font-weight: 700; padding: 6px 12px; background: #f5f5f7; border-radius: 16px; font-size: 0.9em;">${PRIORITY_LABELS[review.priority]}</span>
                                     <span class="sentiment-badge badge-${review.sentiment}">${SENTIMENT_LABELS[review.sentiment]}</span>
-                                    <span style="color: #555; font-weight: 600;">${PRIORITY_LABELS[review.priority]}</span>
                                 </div>
+                                <strong style="font-size: 1.05em;">${escapeHtml(review.title || review.content.substring(0, 40))}</strong>
                             </div>
                         </div>
 
@@ -635,18 +639,18 @@
 
                         <div class="review-actions">
                             ${review.url && review.url !== 'about:blank' ? 
-                                `<button class="btn-small btn-source" onclick="window.open('${review.url}', '_blank')">🔗 查看原文</button>` : 
-                                `<button class="btn-small btn-source" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(review.content.substring(0, 50))}', '_blank')">🔍 Google 搜尋</button>`
+                                `<button class="btn-small btn-source" onclick="window.open('${review.url}', '_blank')">查看原文</button>` : 
+                                `<button class="btn-small btn-source" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(review.content.substring(0, 50))}', '_blank')">Google 搜尋</button>`
                             }
                             <select class="status-select" onchange="saveReviewStatus(${idx}, this.value)">
-                                <option value="pending" ${savedStatus === 'pending' ? 'selected' : ''}>⏳ 未處理</option>
-                                <option value="processing" ${savedStatus === 'processing' ? 'selected' : ''}>⚙️ 進行中</option>
-                                <option value="done" ${savedStatus === 'done' ? 'selected' : ''}>✅ 已完成</option>
+                                <option value="pending" ${savedStatus === 'pending' ? 'selected' : ''}>未處理</option>
+                                <option value="processing" ${savedStatus === 'processing' ? 'selected' : ''}>進行中</option>
+                                <option value="done" ${savedStatus === 'done' ? 'selected' : ''}>已完成</option>
                             </select>
                         </div>
 
                         <div style="font-size: 0.85em; color: #999;">
-                            信心: ${(review.sentiment_confidence * 100).toFixed(0)}% | 分數: ${(review.sentiment_score * 100).toFixed(0)}%
+                            品牌信任度: ${(review.sentiment_confidence * 100).toFixed(0)}% | 分數: ${(review.sentiment_score * 100).toFixed(0)}%
                         </div>
                     </div>
                 `;
