@@ -30,17 +30,19 @@
         }
 
         header h1 {
-            font-size: 4em;
+            font-size: 4.5em;
             font-weight: 800;
             color: #1d1d1f;
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+            line-height: 1.1;
         }
 
         header p {
-            font-size: 1.2em;
+            font-size: 1.25em;
             color: #86868b;
             font-weight: 400;
+            line-height: 1.6;
         }
 
         .input-box {
@@ -295,7 +297,7 @@
         }
 
         .stat-card {
-            background: #f9f9f9;
+            background: transparent;
             padding: 32px;
             border-radius: 16px;
             text-align: center;
@@ -304,18 +306,19 @@
 
         .stat-card h3 {
             color: #86868b;
-            font-size: 0.8em;
-            margin-bottom: 16px;
+            font-size: 0.75em;
+            margin-bottom: 20px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             font-weight: 500;
         }
 
         .stat-card .number {
-            font-size: 3em;
+            font-size: 3.5em;
             font-weight: 700;
             color: #0071e3;
-            letter-spacing: -1px;
+            letter-spacing: -1.5px;
+            line-height: 1;
         }
 
         .charts-container {
@@ -406,10 +409,11 @@
                 <h2>評論監控</h2>
                 
                 <div class="controls">
-                    <input type="text" id="keywordFilter" class="filter-input" placeholder="🔍 過濾關鍵詞…">
+                    <input type="text" id="keywordFilter" class="filter-input" placeholder="過濾關鍵詞…">
                     <select id="sortSelect" class="sort-select">
                         <option value="priority">按嚴重性排序</option>
-                        <option value="sentiment">按情感排序</option>
+                        <option value="impact">按危害指數排序</option>
+                        <option value="confidence">按討論熱度排序</option>
                     </select>
                     <button onclick="exportReport()">導出報告</button>
                 </div>
@@ -618,9 +622,16 @@
 
             if (sort === 'priority') {
                 filtered.sort((a, b) => a.priority - b.priority);
-            } else if (sort === 'sentiment') {
-                const sentimentOrder = { negative: 0, suggestion: 1, neutral: 2, positive: 3 };
-                filtered.sort((a, b) => sentimentOrder[a.sentiment] - sentimentOrder[b.sentiment]);
+            } else if (sort === 'impact') {
+                // 危害指数：优先级 + 负面程度
+                filtered.sort((a, b) => {
+                    const scoreA = a.priority + (a.sentiment === 'negative' ? a.sentiment_confidence * a.sentiment_score : 0);
+                    const scoreB = b.priority + (b.sentiment === 'negative' ? b.sentiment_confidence * b.sentiment_score : 0);
+                    return scoreB - scoreA;
+                });
+            } else if (sort === 'confidence') {
+                // 讨论热度：按信心度（重复出现）排序
+                filtered.sort((a, b) => b.sentiment_confidence - a.sentiment_confidence);
             }
 
             displayReviews(filtered);
