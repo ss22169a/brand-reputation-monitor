@@ -36,8 +36,17 @@ class SentimentAnalyzer:
         self.use_ml = use_ml
         self.classifier = None
         
-        # Load keywords from keywords_config.py
-        self._load_keywords_from_config()
+        # Initialize keywords with defaults
+        self.positive_keywords = {"好": 2, "棒": 2, "讚": 2, "優": 1}
+        self.negative_keywords = {"爛": 2, "糟": 2, "垃圾": 2, "討厭": 2}
+        self.suggestion_keywords = {"建議": 1, "希望": 0.8}
+        self.critical_keywords = {}
+        self.strategic_keywords = {}
+        self.operational_keywords = {}
+        self.opportunity_keywords = {}
+        
+        # Load keywords from JSON file
+        self._load_keywords_from_json()
         
         # ML model disabled by default - use rule-based for speed
         if use_ml and HAS_TORCH:
@@ -50,73 +59,46 @@ class SentimentAnalyzer:
             except Exception as e:
                 print(f"Warning: Could not load classifier: {e}")
                 self.classifier = None
-        
-        # Keywords for simple fallback analysis (will be overridden by config file)
-        self.positive_keywords = {"好": 2, "棒": 2, "讚": 2, "優": 1}
-        self.negative_keywords = {"爛": 2, "糟": 2, "垃圾": 2, "討厭": 2}
-        self.suggestion_keywords = {"建議": 1, "希望": 0.8}
-        
-        # 4 級優先級分類 (will be overridden by config file)
-        self.critical_keywords = {}
-        self.strategic_keywords = {}
-        self.operational_keywords = {}
-        self.opportunity_keywords = {}
     
-    def _load_keywords_from_config(self) -> None:
-        """Load keywords from JSON file directly"""
+    def _load_keywords_from_json(self) -> None:
+        """Load keywords from JSON file with better error handling"""
+        import json
+        from pathlib import Path
+        
+        # Try multiple paths
+        possible_paths = [
+            Path(__file__).parent.parent / 'data' / 'keywords.json',
+            Path.cwd() / 'backend' / 'data' / 'keywords.json',
+            Path.cwd() / 'data' / 'keywords.json',
+        ]
+        
+        json_path = None
+        for path in possible_paths:
+            if path.exists():
+                json_path = path
+                break
+        
+        if not json_path:
+            print(f"⚠️ 找不到 keywords.json")
+            return
+        
         try:
-            import json
-            from pathlib import Path
-            
-            # Try multiple paths to find keywords.json
-            possible_paths = [
-                Path(__file__).parent.parent / 'data' / 'keywords.json',  # From sentiment.py perspective
-                Path(__file__).parent.parent.parent / 'data' / 'keywords.json',  # If in different context
-                Path.cwd() / 'backend' / 'data' / 'keywords.json',  # From cwd
-                Path.cwd() / 'data' / 'keywords.json',  # Alternative
-            ]
-            
-            json_path = None
-            for path in possible_paths:
-                if path.exists():
-                    json_path = path
-                    break
-            
-            if not json_path:
-                print(f"⚠️ 找不到 keywords.json")
-                return
-            
             with open(json_path, 'r', encoding='utf-8') as f:
-                keywords = json.load(f)
+                data = json.load(f)
             
-            # Load all keywords from JSON - with debugging
-            try:
-                # Debug: check loaded data
-                c_kw = keywords.get('CRITICAL', {}).get('keywords', {})
-                s_kw = keywords.get('STRATEGIC', {}).get('keywords', {})
-                o_kw = keywords.get('OPERATIONAL', {}).get('keywords', {})
-                opp_kw = keywords.get('OPPORTUNITIES', {}).get('keywords', {})
-                
-                self.critical_keywords = c_kw
-                self.strategic_keywords = s_kw
-                self.operational_keywords = o_kw
-                self.opportunity_keywords = opp_kw
-                
-                # Debug output
-                debug_total = len(c_kw) + len(s_kw) + len(o_kw) + len(opp_kw)
-                
-            except Exception as load_e:
-                print(f"⚠️ 詞彙分配出錯: {load_e}")
-                raise
+            # Load each category
+            self.critical_keywords = dict(data.get('CRITICAL', {}).get('keywords', {}))
+            self.strategic_keywords = dict(data.get('STRATEGIC', {}).get('keywords', {}))
+            self.operational_keywords = dict(data.get('OPERATIONAL', {}).get('keywords', {}))
+            self.opportunity_keywords = dict(data.get('OPPORTUNITIES', {}).get('keywords', {}))
             
             total = (len(self.critical_keywords) + len(self.strategic_keywords) + 
                     len(self.operational_keywords) + len(self.opportunity_keywords))
+            
             print(f"✓ 已從 keywords.json 載入 {total} 個詞彙")
             
         except Exception as e:
-            print(f"⚠️ 載入詞彙時出錯: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"⚠️ 載入詞彙失敗: {e}")
         
     def analyze(self, text: str) -> SentimentResult:
         """
