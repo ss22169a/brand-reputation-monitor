@@ -155,25 +155,44 @@
             display: block;
             font-weight: 600;
             color: #1d1d1f;
-            margin-bottom: 12px;
-            font-size: 1.05em;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            letter-spacing: 0.3px;
+            transition: color 0.3s ease;
         }
 
         .input-group input {
             width: 100%;
-            padding: 16px 20px;
-            border: 1px solid #d5d5d7;
-            border-radius: 12px;
-            font-size: 1em;
-            background: white;
-            transition: all 0.3s;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 2px solid #d5d5d7;
+            border-radius: 0;
+            font-size: 1.1em;
+            background: transparent;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            letter-spacing: 0.5px;
         }
 
         .input-group input:focus {
             outline: none;
-            background: white;
-            border-color: #555;
-            box-shadow: 0 0 0 4px rgba(0,0,0,0.08);
+            border-bottom-color: #0071e3;
+            padding-bottom: 10px;
+            box-shadow: none;
+        }
+
+        .input-group input::placeholder {
+            color: #d5d5d7;
+            transition: color 0.3s;
+        }
+
+        .input-group input:focus::placeholder {
+            color: #999;
+        }
+
+        /* 打字機光標效果 */
+        .input-group input {
+            caret-color: #0071e3;
+            caret-width: 2px;
         }
 
         .submit-btn {
@@ -912,7 +931,19 @@
             document.getElementById('helpModal').classList.remove('show');
         }
 
-        document.getElementById('brandName').focus();
+        // 打字機效果：標籤顏色變化
+        const brandInput = document.getElementById('brandName');
+        const brandLabel = document.querySelector('label[for="brandName"]');
+        
+        brandInput.addEventListener('focus', () => {
+            brandLabel.style.color = '#0071e3';
+        });
+        
+        brandInput.addEventListener('blur', () => {
+            brandLabel.style.color = '#1d1d1f';
+        });
+
+        brandInput.focus();
     </script>
 </body>
 </html>
