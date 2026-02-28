@@ -82,6 +82,10 @@ class SerpAPIScraper(BaseScraper):
                 # Extract organic results
                 organic_results = data.get("organic_results", [])
                 
+                # Debug: print first result to see structure
+                if organic_results:
+                    print(f"      第一筆結果: {organic_results[0]}")
+                
                 for result in organic_results:
                     try:
                         title = result.get("title", "")
