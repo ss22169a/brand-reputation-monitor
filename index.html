@@ -43,7 +43,7 @@
             font-weight: 400;
         }
 
-        .search-box {
+        .input-box {
             background: #f9f9f9;
             padding: 40px;
             border-radius: 20px;
@@ -52,36 +52,44 @@
             margin-bottom: 40px;
         }
 
-        .search-box form {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+        .input-group {
+            margin-bottom: 20px;
         }
 
-        .search-box input {
-            flex: 1;
-            min-width: 250px;
-            padding: 14px 18px;
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 14px 16px;
             border: 1px solid #d5d5d7;
             border-radius: 12px;
             font-size: 1em;
-            background: #f5f5f7;
-            transition: all 0.3s;
-            color: #1d1d1f;
-        }
-
-        .search-box input::placeholder {
-            color: #a1a1a6;
-        }
-
-        .search-box input:focus {
-            outline: none;
             background: white;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
             border-color: #555;
             box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
         }
 
-        .search-box button {
+        .input-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
             padding: 14px 32px;
             background: #0071e3;
             color: white;
@@ -89,23 +97,25 @@
             border-radius: 12px;
             font-size: 1em;
             cursor: pointer;
-            transition: all 0.3s;
             font-weight: 600;
             letter-spacing: 0.3px;
+            transition: all 0.3s;
         }
 
-        .search-box button:hover {
+        .submit-btn:hover {
             background: #0077ed;
             box-shadow: 0 4px 12px rgba(0,113,227,0.3);
         }
 
-        .search-box button:active {
-            background: #0066d6;
-        }
-
-        .search-box button:disabled {
+        .submit-btn:disabled {
             background: #d5d5d7;
             cursor: not-allowed;
+        }
+
+        .help-text {
+            margin-top: 12px;
+            color: #86868b;
+            font-size: 0.9em;
         }
 
         .loading {
@@ -145,7 +155,6 @@
             background: #f9f9f9;
             padding: 24px;
             border-radius: 16px;
-            box-shadow: none;
             text-align: center;
             border: 1px solid #f0f0f0;
         }
@@ -163,13 +172,7 @@
             font-size: 2.8em;
             font-weight: 700;
             color: #0071e3;
-            letter-spacing: -1px;
         }
-
-        .stat-card.positive .number { color: #34c759; }
-        .stat-card.negative .number { color: #ff3b30; }
-        .stat-card.neutral .number { color: #ff9500; }
-        .stat-card.suggestion .number { color: #007aff; }
 
         .charts-container {
             display: grid;
@@ -182,7 +185,6 @@
             background: #f9f9f9;
             padding: 28px;
             border-radius: 16px;
-            box-shadow: none;
             border: 1px solid #f0f0f0;
         }
 
@@ -197,7 +199,6 @@
             background: #f9f9f9;
             padding: 28px;
             border-radius: 16px;
-            box-shadow: none;
             border: 1px solid #f0f0f0;
         }
 
@@ -219,9 +220,7 @@
         }
 
         .review-item:hover {
-            background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border-color: #e8e8e8;
         }
 
         .review-item.priority-1 { border-left-color: #ff3b30; }
@@ -256,7 +255,6 @@
 
         .badge-positive { background: #d1fae5; color: #065f46; }
         .badge-negative { background: #fee2e2; color: #991b1b; }
-        .badge-neutral { background: #fef3c7; color: #92400e; }
         .badge-suggestion { background: #dbeafe; color: #1e40af; }
 
         .review-content {
@@ -272,12 +270,6 @@
             font-size: 0.85em;
             color: #86868b;
             flex-wrap: wrap;
-        }
-
-        .review-meta span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .priority-label {
@@ -324,32 +316,13 @@
             font-weight: 500;
         }
 
-        .keyword.positive::before { content: "✓ "; color: #34c759; font-weight: bold; }
-        .keyword.negative::before { content: "✗ "; color: #ff3b30; font-weight: bold; }
-
         @media (max-width: 768px) {
             header h1 {
                 font-size: 2.5em;
             }
 
-            header p {
-                font-size: 1em;
-            }
-
-            .search-box {
+            .input-box {
                 padding: 30px;
-            }
-
-            .search-box form {
-                flex-direction: column;
-            }
-
-            .search-box input {
-                min-width: 100%;
-            }
-
-            .search-box button {
-                width: 100%;
             }
 
             .stats-grid {
@@ -366,27 +339,40 @@
     <div class="container">
         <header>
             <h1>品牌口碑監控</h1>
-            <p>分析品牌評論，智能排序優先級</p>
+            <p>分析評論，智能排序優先級</p>
         </header>
 
-        <div class="search-box">
+        <div class="input-box">
             <form id="searchForm">
-                <input 
-                    type="url" 
-                    id="searchUrl" 
-                    placeholder="貼上 Google 搜尋 URL (例: https://www.google.com/search?q=BLANK+SPACE+評論)" 
-                    required
-                >
-                <button type="submit" id="searchBtn">分析</button>
+                <div class="input-group">
+                    <label for="brandName">品牌名稱</label>
+                    <input 
+                        type="text" 
+                        id="brandName" 
+                        placeholder="例: Apple, BLANK SPACE, Acer…" 
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="reviewText">評論文本</label>
+                    <textarea 
+                        id="reviewText" 
+                        placeholder="貼上評論文本（可複製多篇評論，用換行分隔）" 
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">分析評論</button>
             </form>
-            <p style="margin-top: 12px; color: #86868b; font-size: 0.9em;">
-                💡 使用方式：在 Google 搜尋你想要的品牌 + 評論詞，複製 URL 貼上這裡
+            <p class="help-text">
+                💡 複製評論文本，系統會自動分析情感、分類問題、排序優先級
             </p>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>正在分析評論中...</p>
+            <p>正在分析評論中…</p>
         </div>
 
         <div id="errorContainer"></div>
@@ -398,7 +384,7 @@
         </div>
 
         <div class="no-results" id="noResults" style="display: none;">
-            輸入品牌名稱開始分析
+            輸入品牌名稱和評論文本開始分析
         </div>
     </div>
 
@@ -416,27 +402,21 @@
         const SENTIMENT_LABELS = {
             'positive': '正面 👍',
             'negative': '負面 👎',
-            'neutral': '中立 😐',
             'suggestion': '建議 💡'
-        };
-
-        const SENTIMENT_COLORS = {
-            'positive': '#10b981',
-            'negative': '#ef4444',
-            'neutral': '#f59e0b',
-            'suggestion': '#3b82f6'
         };
 
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const searchUrl = document.getElementById('searchUrl').value.trim();
-            if (!searchUrl) return;
+            const brandName = document.getElementById('brandName').value.trim();
+            const reviewText = document.getElementById('reviewText').value.trim();
+            
+            if (!brandName || !reviewText) return;
 
-            await analyzeReviews(searchUrl);
+            await analyzeReviews(brandName, reviewText);
         });
 
-        async function analyzeReviews(brandName) {
+        async function analyzeReviews(brandName, reviewText) {
             const loading = document.getElementById('loading');
             const results = document.getElementById('results');
             const noResults = document.getElementById('noResults');
@@ -448,16 +428,14 @@
             errorContainer.innerHTML = '';
 
             try {
-                const response = await fetch(`${API_URL}/api/monitor`, {
+                const response = await fetch(`${API_URL}/api/analyze`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        brand_name: query,
-                        google_url: googleUrl,
-                        platforms: ['google'],
-                        limit: 20
+                        brand_name: brandName,
+                        reviews_text: reviewText
                     })
                 });
 
@@ -469,7 +447,7 @@
 
                 if (data.total_reviews === 0) {
                     noResults.style.display = 'block';
-                    noResults.innerHTML = `沒有找到結果。請確保 URL 正確並且包含搜尋結果。`;
+                    noResults.innerHTML = '沒有分析結果';
                 } else {
                     displayResults(data);
                     results.style.display = 'block';
@@ -477,11 +455,9 @@
             } catch (error) {
                 errorContainer.innerHTML = `
                     <div class="error">
-                        <strong>錯誤:</strong> ${error.message}<br>
-                        <small>確保 API 服務器正在運行 (localhost:8000)</small>
+                        <strong>錯誤:</strong> ${error.message}
                     </div>
                 `;
-                console.error('Error:', error);
             } finally {
                 loading.classList.remove('show');
             }
@@ -498,21 +474,17 @@
             const dist = data.sentiment_distribution;
 
             statsGrid.innerHTML = `
-                <div class="stat-card positive">
+                <div class="stat-card">
                     <h3>正面評論</h3>
-                    <div class="number">${dist.positive || 0}</div>
+                    <div class="number" style="color: #34c759;">${dist.positive || 0}</div>
                 </div>
-                <div class="stat-card negative">
+                <div class="stat-card">
                     <h3>負面評論</h3>
-                    <div class="number">${dist.negative || 0}</div>
+                    <div class="number" style="color: #ff3b30;">${dist.negative || 0}</div>
                 </div>
-                <div class="stat-card neutral">
-                    <h3>中立評論</h3>
-                    <div class="number">${dist.neutral || 0}</div>
-                </div>
-                <div class="stat-card suggestion">
+                <div class="stat-card">
                     <h3>建議</h3>
-                    <div class="number">${dist.suggestion || 0}</div>
+                    <div class="number" style="color: #007aff;">${dist.suggestion || 0}</div>
                 </div>
                 <div class="stat-card">
                     <h3>總評論數</h3>
@@ -523,7 +495,7 @@
 
         function displayCharts(data) {
             const chartsContainer = document.getElementById('chartsContainer');
-
+            
             chartsContainer.innerHTML = `
                 <div class="chart-box">
                     <h3>情感分佈</h3>
@@ -535,7 +507,6 @@
                 </div>
             `;
 
-            // Draw charts after DOM update
             setTimeout(() => {
                 drawSentimentChart(data.sentiment_distribution);
                 drawPriorityChart(data.priority_distribution);
@@ -549,32 +520,21 @@
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['正面', '負面', '中立', '建議'],
+                    labels: ['正面', '負面', '建議'],
                     datasets: [{
                         data: [
                             distribution.positive || 0,
                             distribution.negative || 0,
-                            distribution.neutral || 0,
                             distribution.suggestion || 0
                         ],
-                        backgroundColor: [
-                            '#10b981',
-                            '#ef4444',
-                            '#f59e0b',
-                            '#3b82f6'
-                        ],
+                        backgroundColor: ['#34c759', '#ff3b30', '#007aff'],
                         borderWidth: 2,
                         borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
+                    plugins: { legend: { position: 'bottom' } }
                 }
             });
         }
@@ -583,46 +543,28 @@
             const ctx = document.getElementById('priorityCanvas')?.getContext('2d');
             if (!ctx) return;
 
-            const priorityData = [
-                distribution['1'] || 0,
-                distribution['2'] || 0,
-                distribution['3'] || 0,
-                distribution['4'] || 0,
-                distribution['5'] || 0
-            ];
-
             new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['🔴 緊急', '🟠 中等', '🔵 普通', '🟢 低', '🟣 最低'],
                     datasets: [{
                         label: '評論數',
-                        data: priorityData,
-                        backgroundColor: [
-                            '#ef4444',
-                            '#f59e0b',
-                            '#3b82f6',
-                            '#10b981',
-                            '#8b5cf6'
+                        data: [
+                            distribution['1'] || 0,
+                            distribution['2'] || 0,
+                            distribution['3'] || 0,
+                            distribution['4'] || 0,
+                            distribution['5'] || 0
                         ],
-                        borderRadius: 5,
-                        borderSkipped: false
+                        backgroundColor: ['#ff3b30', '#ff9500', '#007aff', '#34c759', '#a2845d'],
+                        borderRadius: 5
                     }]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true
-                        }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
                 }
             });
         }
@@ -641,37 +583,23 @@
                 const priorityClass = `priority-${review.priority}`;
                 const priorityLabel = PRIORITY_LABELS[review.priority] || `優先級 ${review.priority}`;
 
-                const keywordsHTML = review.keywords.map(kw => {
-                    const isNegative = kw.startsWith('-');
-                    const keywordClass = isNegative ? 'negative' : 'positive';
+                const keywordsHTML = review.keywords.slice(0, 3).map(kw => {
                     const cleanKw = kw.replace(/^[-+]/, '');
-                    return `<span class="keyword ${keywordClass}">${cleanKw}</span>`;
+                    return `<span class="keyword">${cleanKw}</span>`;
                 }).join('');
-
-                const sourceIcon = {
-                    'dcard': '🎫',
-                    'ptt': '🗨️',
-                    'threads': '🧵',
-                    'instagram': '📸',
-                    'google_search': '🔍'
-                }[review.source] || '📝';
 
                 return `
                     <div class="review-item ${priorityClass}">
                         <div class="review-header">
-                            <div class="review-title">${escapeHtml(review.title)}</div>
+                            <div class="review-title">${escapeHtml(review.title || review.content.substring(0, 40))}</div>
                             <span class="review-badge ${sentimentBadgeClass}">${sentimentLabel}</span>
                         </div>
                         <div class="review-content">${escapeHtml(review.content)}</div>
-                        <div class="keywords">${keywordsHTML}</div>
+                        ${keywordsHTML ? `<div class="keywords">${keywordsHTML}</div>` : ''}
                         <div class="review-meta">
                             <span><strong class="priority-label">${priorityLabel}</strong></span>
-                            <span>${sourceIcon} ${review.source}</span>
                             <span>分數: ${(review.sentiment_score * 100).toFixed(0)}%</span>
                             <span>信心: ${(review.sentiment_confidence * 100).toFixed(0)}%</span>
-                        </div>
-                        <div style="margin-top: 14px;">
-                            <a href="${escapeHtml(review.url)}" target="_blank" style="color: #0071e3; text-decoration: none; font-size: 0.9em; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">查看原文 <span style="font-size: 1.1em;">↗</span></a>
                         </div>
                     </div>
                 `;
@@ -694,8 +622,7 @@
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        // Auto-focus on URL input
-        document.getElementById('searchUrl').focus();
+        document.getElementById('brandName').focus();
     </script>
 </body>
 </html>

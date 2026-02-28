@@ -12,9 +12,10 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapers.google_url import GoogleUrlScraper
 from nlp.sentiment import SentimentAnalyzer, SentimentResult
 from nlp.classifier import ProblemClassifier
+from scrapers.base import Review
+from datetime import datetime
 
 app = FastAPI(
     title="Brand Reputation Monitor API",
@@ -47,11 +48,9 @@ async def startup_event():
 
 # Pydantic models
 class MonitoringRequest(BaseModel):
-    """Request to start monitoring a brand"""
+    """Request to analyze user-provided reviews"""
     brand_name: str
-    google_url: Optional[str] = None
-    platforms: List[str] = ["google"]
-    limit: Optional[int] = 20
+    reviews_text: str
 
 
 class ReviewAnalysis(BaseModel):
@@ -91,35 +90,41 @@ async def health_check():
     return {"status": "healthy", "models_loaded": sentiment_analyzer is not None}
 
 
-@app.post("/api/monitor")
-async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
+@app.post("/api/analyze")
+async def analyze_reviews(request: MonitoringRequest) -> MonitoringResponse:
     """
-    Monitor a brand across platforms
+    Analyze user-provided reviews
     
     Args:
-        request: MonitoringRequest with brand_name and platforms
+        request: MonitoringRequest with brand_name and reviews_text
         
     Returns:
         MonitoringResponse with analyzed reviews
     """
     
-    if not request.brand_name or len(request.brand_name) < 2:
-        raise HTTPException(status_code=400, detail="品牌名稱至少需要 2 個字符")
+    if not request.brand_name or len(request.brand_name) < 1:
+        raise HTTPException(status_code=400, detail="請輸入品牌名稱")
+    
+    if not request.reviews_text or len(request.reviews_text) < 5:
+        raise HTTPException(status_code=400, detail="請輸入評論文本")
     
     if sentiment_analyzer is None or problem_classifier is None:
         raise HTTPException(status_code=503, detail="NLP 模型未初始化")
     
     try:
-        # Step 1: Scrape reviews from Google Search URL
-        print(f"\n[1/3] Google 搜尋結果分析: {request.brand_name}")
-        scraper = GoogleUrlScraper(brand_name=request.brand_name, google_url=request.google_url)
-        reviews = await scraper.scrape()
-        reviews = reviews[:request.limit] if request.limit else reviews
+        # Step 1: Parse user reviews
+        print(f"\n[1/3] 解析評論: {request.brand_name}")
         
-        print(f"✓ 找到 {len(reviews)} 篇評論")
+        # Split by newlines or other delimiters
+        review_texts = [
+            text.strip() 
+            for text in request.reviews_text.split('\n') 
+            if text.strip() and len(text.strip()) > 5
+        ]
         
-        if not reviews:
-            print(f"⚠️ 找不到關於「{request.brand_name}」的評論")
+        print(f"✓ 找到 {len(review_texts)} 篇評論")
+        
+        if not review_texts:
             return MonitoringResponse(
                 brand_name=request.brand_name,
                 total_reviews=0,
@@ -128,10 +133,25 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
                 priority_distribution={}
             )
         
+        # Convert to Review objects
+        reviews = [
+            Review(
+                source="user_input",
+                title="",
+                content=text,
+                author="用戶",
+                rating=None,
+                url="",
+                scraped_at=datetime.now(),
+                posted_at=None,
+            )
+            for text in review_texts
+        ]
+        
         # Step 2: Analyze sentiment and classify
         print(f"[2/3] 分析情感和分類...")
         analyzed_reviews: List[ReviewAnalysis] = []
-        sentiment_counts = {"positive": 0, "negative": 0, "neutral": 0, "suggestion": 0}
+        sentiment_counts = {"positive": 0, "negative": 0, "suggestion": 0}
         priority_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
         
         for review in reviews:
@@ -150,10 +170,10 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
             
             # Create analysis object
             analysis = ReviewAnalysis(
-                title=review.title,
-                content=review.content[:200],  # Limit content length
-                source=review.source,
-                url=review.url,
+                title="",
+                content=review.content[:300],
+                source="user_input",
+                url="",
                 sentiment=sentiment_result.sentiment,
                 sentiment_score=sentiment_result.score,
                 sentiment_confidence=sentiment_result.confidence,
@@ -179,7 +199,7 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
         )
         
     except Exception as e:
-        print(f"監控品牌時出錯: {e}")
+        print(f"分析評論時出錯: {e}")
         raise HTTPException(status_code=500, detail=f"錯誤: {str(e)}")
 
 
