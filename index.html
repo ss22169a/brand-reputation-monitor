@@ -354,25 +354,16 @@
                     >
                 </div>
 
-                <div class="input-group">
-                    <label for="reviewText">評論文本</label>
-                    <textarea 
-                        id="reviewText" 
-                        placeholder="貼上評論文本（可複製多篇評論，用換行分隔）" 
-                        required
-                    ></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn">分析評論</button>
+                <button type="submit" class="submit-btn">開始監控</button>
             </form>
             <p class="help-text">
-                💡 複製評論文本，系統會自動分析情感、分類問題、排序優先級
+                💡 輸入品牌名稱，系統自動搜尋並分析風向
             </p>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>正在分析評論中…</p>
+            <p>正在搜尋和分析中…（約 5-10 秒）</p>
         </div>
 
         <div id="errorContainer"></div>
@@ -384,7 +375,7 @@
         </div>
 
         <div class="no-results" id="noResults" style="display: none;">
-            輸入品牌名稱和評論文本開始分析
+            輸入品牌名稱開始監控
         </div>
     </div>
 
@@ -409,14 +400,13 @@
             e.preventDefault();
             
             const brandName = document.getElementById('brandName').value.trim();
-            const reviewText = document.getElementById('reviewText').value.trim();
             
-            if (!brandName || !reviewText) return;
+            if (!brandName) return;
 
-            await analyzeReviews(brandName, reviewText);
+            await analyzeReviews(brandName);
         });
 
-        async function analyzeReviews(brandName, reviewText) {
+        async function analyzeReviews(brandName) {
             const loading = document.getElementById('loading');
             const results = document.getElementById('results');
             const noResults = document.getElementById('noResults');
@@ -434,8 +424,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        brand_name: brandName,
-                        reviews_text: reviewText
+                        brand_name: brandName
                     })
                 });
 
@@ -623,6 +612,12 @@
         }
 
         document.getElementById('brandName').focus();
+        
+        // Load saved state from localStorage
+        const savedState = localStorage.getItem('brand-monitor-state');
+        if (savedState) {
+            // Can load previous searches later
+        }
     </script>
 </body>
 </html>

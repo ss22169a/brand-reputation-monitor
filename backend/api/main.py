@@ -15,7 +15,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from nlp.sentiment import SentimentAnalyzer, SentimentResult
 from nlp.classifier import ProblemClassifier
 from scrapers.base import Review
+from scrapers.serpapi import SerpAPIScraper
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 app = FastAPI(
     title="Brand Reputation Monitor API",
@@ -48,9 +54,8 @@ async def startup_event():
 
 # Pydantic models
 class MonitoringRequest(BaseModel):
-    """Request to analyze user-provided reviews"""
+    """Request to monitor a brand"""
     brand_name: str
-    reviews_text: str
 
 
 class ReviewAnalysis(BaseModel):
@@ -105,26 +110,23 @@ async def analyze_reviews(request: MonitoringRequest) -> MonitoringResponse:
     if not request.brand_name or len(request.brand_name) < 1:
         raise HTTPException(status_code=400, detail="請輸入品牌名稱")
     
-    if not request.reviews_text or len(request.reviews_text) < 5:
-        raise HTTPException(status_code=400, detail="請輸入評論文本")
-    
     if sentiment_analyzer is None or problem_classifier is None:
         raise HTTPException(status_code=503, detail="NLP 模型未初始化")
     
     try:
-        # Step 1: Parse user reviews
-        print(f"\n[1/3] 解析評論: {request.brand_name}")
+        # Step 1: Scrape Google search results using SerpAPI
+        print(f"\n[1/3] Google 搜尋: {request.brand_name}")
         
-        # Split by newlines or other delimiters
-        review_texts = [
-            text.strip() 
-            for text in request.reviews_text.split('\n') 
-            if text.strip() and len(text.strip()) > 5
-        ]
+        api_key = os.getenv("SERPAPI_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="SerpAPI 密鑰未設定")
         
-        print(f"✓ 找到 {len(review_texts)} 篇評論")
+        scraper = SerpAPIScraper(brand_name=request.brand_name, api_key=api_key)
+        reviews = await scraper.scrape()
         
-        if not review_texts:
+        print(f"✓ 找到 {len(reviews)} 篇搜尋結果")
+        
+        if not reviews:
             return MonitoringResponse(
                 brand_name=request.brand_name,
                 total_reviews=0,
@@ -132,21 +134,6 @@ async def analyze_reviews(request: MonitoringRequest) -> MonitoringResponse:
                 sentiment_distribution={},
                 priority_distribution={}
             )
-        
-        # Convert to Review objects
-        reviews = [
-            Review(
-                source="user_input",
-                title="",
-                content=text,
-                author="用戶",
-                rating=None,
-                url="",
-                scraped_at=datetime.now(),
-                posted_at=None,
-            )
-            for text in review_texts
-        ]
         
         # Step 2: Analyze sentiment and classify
         print(f"[2/3] 分析情感和分類...")
