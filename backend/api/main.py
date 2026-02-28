@@ -11,11 +11,16 @@ from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent))
 
 from nlp.sentiment import SentimentAnalyzer, SentimentResult
 from nlp.classifier import ProblemClassifier
 from scrapers.base import Review
 from scrapers.serpapi import SerpAPIScraper
+try:
+    from routes.keywords import router as keywords_router
+except ImportError:
+    from .routes.keywords import router as keywords_router
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -37,6 +42,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routes
+app.include_router(keywords_router)
 
 # Initialize analyzers once at startup
 sentiment_analyzer = None

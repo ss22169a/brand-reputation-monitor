@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>詞庫維護後台 | 品牌口碑監控系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-section input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-section button {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .search-section button:hover {
+            background: #5568d3;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .category-header {
+            padding: 20px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .category-header.critical {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .category-header.strategic {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+        }
+
+        .category-header.operational {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .category-header.opportunities {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .category-header h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .category-header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .category-content {
+            padding: 20px;
+        }
+
+        .add-keyword {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .add-keyword input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .add-keyword input[type="number"] {
+            width: 70px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .add-keyword button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .add-keyword button:hover {
+            background: #5568d3;
+        }
+
+        .keywords-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .keyword-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f9f9f9;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            font-size: 13px;
+        }
+
+        .keyword-item.critical {
+            border-left-color: #e74c3c;
+        }
+
+        .keyword-item.strategic {
+            border-left-color: #f39c12;
+        }
+
+        .keyword-item.operational {
+            border-left-color: #3498db;
+        }
+
+        .keyword-item.opportunities {
+            border-left-color: #27ae60;
+        }
+
+        .keyword-word {
+            font-weight: 500;
+            color: #333;
+            flex: 1;
+        }
+
+        .keyword-weight {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin: 0 8px;
+            font-size: 12px;
+            color: #666;
+            border: 1px solid #ddd;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .keyword-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .keyword-actions button {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .keyword-actions .edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .keyword-actions .delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .keyword-actions button:hover {
+            opacity: 0.8;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .form-actions .save {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-actions .cancel {
+            background: #ddd;
+            color: #333;
+        }
+
+        .form-actions button:hover {
+            opacity: 0.8;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            display: none;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            border-left: 4px solid #27ae60;
+            background: #f0f9f7;
+        }
+
+        .notification.error {
+            border-left: 4px solid #e74c3c;
+            background: #fdf7f6;
+        }
+
+        .notification.info {
+            border-left: 4px solid #3498db;
+            background: #f0f7ff;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .last-updated {
+            text-align: right;
+            color: #999;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 詞庫維護後台</h1>
+            <p>實時管理品牌口碑監控系統的詞庫 - 情緒分析 | 回應術語 | 問題分類</p>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="number" id="stat-total">0</div>
+                    <div class="label">總詞數</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-critical">0</div>
+                    <div class="label">危機警示</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-strategic">0</div>
+                    <div class="label">情感轉向</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-operational">0</div>
+                    <div class="label">使用痛點</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-opportunities">0</div>
+                    <div class="label">商機</div>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <input type="text" id="searchInput" placeholder="搜尋詞庫...">
+                <button onclick="searchKeywords()">搜尋</button>
+            </div>
+
+            <div class="last-updated">
+                最後更新: <span id="lastUpdated">載入中...</span>
+            </div>
+        </div>
+
+        <div class="categories" id="categoriesContainer">
+            <div class="loading">載入詞庫中...</div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3 id="editTitle">編輯詞庫</h3>
+            <div class="form-group">
+                <label>詞</label>
+                <input type="text" id="editWord" placeholder="輸入詞">
+            </div>
+            <div class="form-group">
+                <label>權重</label>
+                <input type="number" id="editWeight" placeholder="輸入權重" step="0.5" min="0.5" max="2">
+            </div>
+            <div class="form-actions">
+                <button class="save" onclick="saveEdit()">保存</button>
+                <button class="cancel" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <script>
+        // Change this to match your backend URL (localhost:8000 during dev, or your deployed URL)
+        const API_BASE = 'http://localhost:8000/api/keywords';
+        let currentCategory = null;
+        let currentWord = null;
+        let allKeywords = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllKeywords();
+            updateStats();
+        });
+
+        function loadAllKeywords() {
+            fetch(`${API_BASE}/all`)
+                .then(response => response.json())
+                .then(data => {
+                    allKeywords = data;
+                    renderCategories();
+                    updateStats();
+                })
+                .catch(error => {
+                    showNotification('載入詞庫失敗: ' + error.message, 'error');
+                    console.error('Error:', error);
+                });
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+
+            const categories = [
+                { key: 'CRITICAL', label: '🚨 危機警示', desc: '品牌形象受損', color: 'critical' },
+                { key: 'STRATEGIC', label: '📉 情感轉向', desc: '品牌忠誠度下滑', color: 'strategic' },
+                { key: 'OPERATIONAL', label: '⚙️ 使用痛點', desc: '產品/流程優化', color: 'operational' },
+                { key: 'OPPORTUNITIES', label: '🎯 關鍵商機', desc: '銷售轉化', color: 'opportunities' }
+            ];
+
+            categories.forEach(cat => {
+                const categoryData = allKeywords[cat.key] || { keywords: {} };
+                const keywords = Object.entries(categoryData.keywords || {});
+
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.innerHTML = `
+                    <div class="category-header ${cat.color}">
+                        <h2>${cat.label}</h2>
+                        <p>${cat.desc}</p>
+                    </div>
+                    <div class="category-content">
+                        <div class="add-keyword">
+                            <input type="text" placeholder="新詞" class="new-word" data-category="${cat.key}">
+                            <input type="number" placeholder="權重" step="0.5" min="0.5" max="2" value="1" class="new-weight" data-category="${cat.key}">
+                            <button onclick="addKeyword('${cat.key}')">新增</button>
+                        </div>
+                        <div class="keywords-list" id="keywords-${cat.key}">
+                            ${renderKeywordsList(keywords, cat.key, cat.color)}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+
+                // Add event listener for Enter key
+                const wordInput = card.querySelector('.new-word');
+                wordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') addKeyword(cat.key);
+                });
+            });
+        }
+
+        function renderKeywordsList(keywords, category, color) {
+            if (keywords.length === 0) {
+                return '<div class="empty-state">還沒有詞</div>';
+            }
+
+            return keywords.map(([word, weight]) => `
+                <div class="keyword-item ${color}">
+                    <span class="keyword-word">${word}</span>
+                    <span class="keyword-weight">${weight}</span>
+                    <div class="keyword-actions">
+                        <button class="edit" onclick="openEditModal('${category}', '${word}', ${weight})">編輯</button>
+                        <button class="delete" onclick="deleteKeyword('${category}', '${word}')">刪除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addKeyword(category) {
+            const card = event.target.closest('.category-card');
+            const wordInput = card.querySelector('.new-word');
+            const weightInput = card.querySelector('.new-weight');
+            const word = wordInput.value.trim();
+            const weight = parseFloat(weightInput.value) || 1;
+
+            if (!word) {
+                showNotification('請輸入詞', 'error');
+                return;
+            }
+
+            fetch(`${API_BASE}/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category, word, weight })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        wordInput.value = '';
+                        weightInput.value = '1';
+                        loadAllKeywords();
+                        showNotification(`已新增「${word}」到 ${category}`, 'success');
+                    } else {
+                        return response.json().then(e => { throw new Error(e.error); });
+                    }
+                })
+                .catch(error => showNotification('新增失敗: ' + error.message, 'error'));
+        }
+
+        function openEditModal(category, word, weight) {
+            currentCategory = category;
+            currentWord = word;
+            document.getElementById('editWord').value = word;
+            document.getElementById('editWeight').value = weight;
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        function saveEdit() {
+            const newWord = document.getElementById('editWord').value.trim();
+            const newWeight = parseFloat(document.getElementById('editWeight').value);
+
+            if (!newWord) {
+                showNotification('詞不能為空', 'error');
+                return;
+            }
+
+            fetch(`${API_BASE}/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category: currentCategory, word: currentWord, weight: newWeight })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        closeModal();
+                        loadAllKeywords();
+                        showNotification('詞庫已更新', 'success');
+                    } else {
+                        return response.json().then(e => { throw new Error(e.error); });
+                    }
+                })
+                .catch(error => showNotification('更新失敗: ' + error.message, 'error'));
+        }
+
+        function deleteKeyword(category, word) {
+            if (!confirm(`確定刪除「${word}」嗎？`)) return;
+
+            fetch(`${API_BASE}/delete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category, word })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        loadAllKeywords();
+                        showNotification(`已刪除「${word}」`, 'success');
+                    } else {
+                        return response.json().then(e => { throw new Error(e.error); });
+                    }
+                })
+                .catch(error => showNotification('刪除失敗: ' + error.message, 'error'));
+        }
+
+        function searchKeywords() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                loadAllKeywords();
+                return;
+            }
+
+            fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    allKeywords = data;
+                    renderCategories();
+                })
+                .catch(error => showNotification('搜尋失敗: ' + error.message, 'error'));
+        }
+
+        function updateStats() {
+            fetch(`${API_BASE}/stats`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('stat-total').textContent = data.TOTAL || 0;
+                    document.getElementById('stat-critical').textContent = data.CRITICAL || 0;
+                    document.getElementById('stat-strategic').textContent = data.STRATEGIC || 0;
+                    document.getElementById('stat-operational').textContent = data.OPERATIONAL || 0;
+                    document.getElementById('stat-opportunities').textContent = data.OPPORTUNITIES || 0;
+                    document.getElementById('lastUpdated').textContent = data.lastUpdated || '未知';
+                })
+                .catch(error => console.error('Stats error:', error));
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification show ${type}`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Refresh stats every 5 seconds
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>
