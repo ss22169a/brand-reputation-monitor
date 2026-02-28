@@ -179,13 +179,16 @@ class SentimentAnalyzer:
             return None
     
     def _rule_based_analyze(self, text: str) -> SentimentResult:
-        """Rule-based sentiment analysis using 4-level priority keywords
+        """Unified sentiment + priority analysis (2026-03-01 redesign)
         
-        NEW LOGIC (2026-03-01):
-        - CRITICAL 詞 → sentiment=negative, priority=1, status=待處理
-        - STRATEGIC 詞 → sentiment=根據內容評估, priority=2, status=優化溝通
-        - OPERATIONAL 詞 → sentiment=neutral, priority=3, status=產品優化
-        - OPPORTUNITIES 詞 → sentiment=positive, priority=4, status=乘勝追擊
+        新邏輯：情感 = 優先級（自洽設計）
+        - CRITICAL詞 → negative + priority=1（必須處理）
+        - STRATEGIC詞 → negative/neutral + priority=2（需要溝通）
+        - OPERATIONAL詞 → neutral + priority=3（產品優化）
+        - OPPORTUNITIES詞 → positive + priority=4（銷售機會）
+        - 無詞匹配 → neutral + priority=5（無需行動）
+        
+        核心原則：負面情感必定對應優先級1-2，不會出現negative但priority=5的矛盾
         """
         found_keywords = []
         
@@ -195,68 +198,77 @@ class SentimentAnalyzer:
         operational_score = 0.0
         opportunity_score = 0.0
         
-        # 計分 4 級優先級
+        # 掃描所有優先級詞彙
         for keyword, weight in self.critical_keywords.items():
             if keyword in text:
                 critical_score += weight
-                found_keywords.append(f"CRITICAL:{keyword}")
+                found_keywords.append(keyword)
                 
         for keyword, weight in self.strategic_keywords.items():
             if keyword in text:
                 strategic_score += weight
-                found_keywords.append(f"STRATEGIC:{keyword}")
+                found_keywords.append(keyword)
                 
         for keyword, weight in self.operational_keywords.items():
             if keyword in text:
                 operational_score += weight
-                found_keywords.append(f"OPERATIONAL:{keyword}")
+                found_keywords.append(keyword)
                 
         for keyword, weight in self.opportunity_keywords.items():
             if keyword in text:
                 opportunity_score += weight
-                found_keywords.append(f"OPPORTUNITIES:{keyword}")
+                found_keywords.append(keyword)
         
-        # 決定優先級和情感
-        priority = 5  # Default: neutral
+        # 統一的優先級+情感判斷（自洽設計）
+        priority = 5
         category = "neutral"
         sentiment = "neutral"
         score = 0.5
         confidence = 0.3
         
-        # 優先級判斷（按優先順序）
         if critical_score > 0:
+            # CRITICAL = 絕對是負面，必須立刻處理
             priority = 1
             category = "critical"
-            sentiment = "negative"  # CRITICAL → 負面
-            score = 0.2
-            confidence = 0.9
+            sentiment = "negative"
+            score = 0.15  # 低分表示負面
+            confidence = 0.95
+            
         elif strategic_score > 0:
+            # STRATEGIC = 品牌忠誠度問題
             priority = 2
             category = "strategic"
-            # STRATEGIC 需要評估：跟客服/售後相關詞 → 負面，其他 → 中立
-            customer_service_keywords = {"客服", "服務", "售後", "回應", "處理", "態度", "回覆"}
-            is_customer_service_issue = any(kw in text for kw in customer_service_keywords)
-            sentiment = "negative" if is_customer_service_issue else "neutral"
-            score = 0.3 if sentiment == "negative" else 0.5
-            confidence = 0.7
+            # 判斷是否涉及客服 → 負面，否則中立
+            customer_service_kw = {"客服", "服務", "售後", "回應", "處理", "態度", "回覆", "店員", "員工"}
+            has_service_issue = any(kw in text for kw in customer_service_kw)
+            sentiment = "negative" if has_service_issue else "neutral"
+            score = 0.35 if has_service_issue else 0.5
+            confidence = 0.8
+            
         elif operational_score > 0:
+            # OPERATIONAL = 中性的產品痛點，需要優化但不是危機
             priority = 3
             category = "operational"
-            sentiment = "neutral"  # OPERATIONAL → 中立
+            sentiment = "neutral"
             score = 0.5
-            confidence = 0.6
+            confidence = 0.7
+            
         elif opportunity_score > 0:
+            # OPPORTUNITIES = 正面的購買意圖，應該乘勝追擊
             priority = 4
             category = "opportunity"
-            sentiment = "positive"  # OPPORTUNITIES → 正面
-            score = 0.8
-            confidence = 0.8
+            sentiment = "positive"
+            score = 0.85
+            confidence = 0.85
+            
+        # 如果沒有任何詞匹配，保持 neutral + priority=5
+        # （這裡不做任何改動）
         
         return SentimentResult(
             text=text,
             sentiment=sentiment,
             score=score,
-            keywords=found_keywords[:5],  # Top 5 keywords
+            keywords=found_keywords[:8],
             confidence=min(confidence, 0.95),
             priority=priority,
             category=category

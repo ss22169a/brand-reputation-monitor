@@ -906,22 +906,33 @@
         function displayStats(data, positiveRatio) {
             const statsGrid = document.getElementById('statsGrid');
             const dist = data.sentiment_distribution;
+            const priority_dist = data.priority_distribution;
+
+            // 根據優先級分佈計算危險指數（而不是情感分佈）
+            const critical = priority_dist['1'] || 0;
+            const strategic = priority_dist['2'] || 0;
+            const operational = priority_dist['3'] || 0;
+            const opportunities = priority_dist['4'] || 0;
+            const total = data.total_reviews;
+            
+            // 危害分數：Critical 權重 3，Strategic 權重 2，Operational 權重 1
+            const riskScore = (critical * 3 + strategic * 2 + operational * 1) / Math.max(total, 1);
 
             let riskClass, riskText;
-            if (positiveRatio >= 0.6) {
-                riskClass = 'risk-excellent';
-                riskText = '優秀';
-            } else if (positiveRatio <= 0.4) {
+            if (riskScore >= 1.5) {
                 riskClass = 'risk-danger';
                 riskText = '危險';
-            } else {
+            } else if (riskScore >= 0.8) {
                 riskClass = 'risk-normal';
                 riskText = '一般';
+            } else {
+                riskClass = 'risk-excellent';
+                riskText = '優秀';
             }
 
             statsGrid.innerHTML = `
                 <div class="stat-card">
-                    <h3>危險指數 <span class="info-btn">?<span class="tooltip">正面比例：優秀≥60% 一般40% 危險<40%</span></span></h3>
+                    <h3>危險指數 <span class="info-btn">?<span class="tooltip">根據優先級分佈：Critical*3 + Strategic*2 + Operational*1</span></span></h3>
                     <div class="risk-badge ${riskClass}">${riskText}</div>
                 </div>
                 <div class="stat-card">
