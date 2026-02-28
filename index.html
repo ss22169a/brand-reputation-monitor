@@ -682,7 +682,7 @@
                     const scoreB = b.priority + (b.sentiment === 'negative' ? b.sentiment_confidence * b.sentiment_score : 0);
                     return scoreB - scoreA;
                 });
-
+            }
 
             displayReviews(filtered);
         }
