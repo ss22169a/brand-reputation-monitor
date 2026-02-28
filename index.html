@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>品牌口碑監控系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #86868b;
+            font-weight: 400;
+        }
+
+        .search-box {
+            background: #f9f9f9;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: none;
+            border: 1px solid #f0f0f0;
+            margin-bottom: 40px;
+        }
+
+        .search-box form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-box input {
+            flex: 1;
+            min-width: 250px;
+            padding: 14px 18px;
+            border: 1px solid #d5d5d7;
+            border-radius: 12px;
+            font-size: 1em;
+            background: #f5f5f7;
+            transition: all 0.3s;
+            color: #1d1d1f;
+        }
+
+        .search-box input::placeholder {
+            color: #a1a1a6;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            background: white;
+            border-color: #555;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+        }
+
+        .search-box button {
+            padding: 14px 32px;
+            background: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .search-box button:hover {
+            background: #0077ed;
+            box-shadow: 0 4px 12px rgba(0,113,227,0.3);
+        }
+
+        .search-box button:active {
+            background: #0066d6;
+        }
+
+        .search-box button:disabled {
+            background: #d5d5d7;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            color: #1d1d1f;
+            display: none;
+            margin: 40px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #d5d5d7;
+            border-top: 3px solid #0071e3;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #f9f9f9;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: none;
+            text-align: center;
+            border: 1px solid #f0f0f0;
+        }
+
+        .stat-card h3 {
+            color: #86868b;
+            font-size: 0.85em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 500;
+        }
+
+        .stat-card .number {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #0071e3;
+            letter-spacing: -1px;
+        }
+
+        .stat-card.positive .number { color: #34c759; }
+        .stat-card.negative .number { color: #ff3b30; }
+        .stat-card.neutral .number { color: #ff9500; }
+        .stat-card.suggestion .number { color: #007aff; }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .chart-box {
+            background: #f9f9f9;
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: none;
+            border: 1px solid #f0f0f0;
+        }
+
+        .chart-box h3 {
+            margin-bottom: 20px;
+            color: #1d1d1f;
+            font-size: 1.05em;
+            font-weight: 600;
+        }
+
+        .reviews-container {
+            background: #f9f9f9;
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: none;
+            border: 1px solid #f0f0f0;
+        }
+
+        .reviews-container h2 {
+            margin-bottom: 24px;
+            color: #1d1d1f;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .review-item {
+            border-left: 4px solid #0071e3;
+            padding: 18px;
+            margin-bottom: 12px;
+            background: white;
+            border-radius: 12px;
+            transition: all 0.2s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .review-item:hover {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-color: #e8e8e8;
+        }
+
+        .review-item.priority-1 { border-left-color: #ff3b30; }
+        .review-item.priority-2 { border-left-color: #ff9500; }
+        .review-item.priority-3 { border-left-color: #007aff; }
+        .review-item.priority-4 { border-left-color: #34c759; }
+        .review-item.priority-5 { border-left-color: #a2845d; }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .review-title {
+            font-weight: 600;
+            color: #1d1d1f;
+            flex: 1;
+            font-size: 1.02em;
+        }
+
+        .review-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-positive { background: #d1fae5; color: #065f46; }
+        .badge-negative { background: #fee2e2; color: #991b1b; }
+        .badge-neutral { background: #fef3c7; color: #92400e; }
+        .badge-suggestion { background: #dbeafe; color: #1e40af; }
+
+        .review-content {
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            font-size: 0.98em;
+        }
+
+        .review-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85em;
+            color: #86868b;
+            flex-wrap: wrap;
+        }
+
+        .review-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .priority-label {
+            font-weight: 600;
+        }
+
+        .priority-1 .priority-label { color: #ff3b30; }
+        .priority-2 .priority-label { color: #ff9500; }
+        .priority-3 .priority-label { color: #007aff; }
+        .priority-4 .priority-label { color: #34c759; }
+        .priority-5 .priority-label { color: #a2845d; }
+
+        .no-results {
+            text-align: center;
+            color: #86868b;
+            padding: 60px 40px;
+            font-size: 1.1em;
+        }
+
+        .error {
+            background: #fee2e2;
+            border: 1px solid #f5c2c2;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .keywords {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .keyword {
+            display: inline-block;
+            background: #f5f5f7;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .keyword.positive::before { content: "✓ "; color: #34c759; font-weight: bold; }
+        .keyword.negative::before { content: "✗ "; color: #ff3b30; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5em;
+            }
+
+            header p {
+                font-size: 1em;
+            }
+
+            .search-box {
+                padding: 30px;
+            }
+
+            .search-box form {
+                flex-direction: column;
+            }
+
+            .search-box input {
+                min-width: 100%;
+            }
+
+            .search-box button {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>品牌口碑監控</h1>
+            <p>分析品牌評論，智能排序優先級</p>
+        </header>
+
+        <div class="search-box">
+            <form id="searchForm">
+                <input 
+                    type="text" 
+                    id="brandName" 
+                    placeholder="輸入品牌名稱…" 
+                    required
+                >
+                <button type="submit" id="searchBtn">分析</button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在分析評論中...</p>
+        </div>
+
+        <div id="errorContainer"></div>
+
+        <div id="results" style="display: none;">
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="charts-container" id="chartsContainer"></div>
+            <div class="reviews-container" id="reviewsContainer"></div>
+        </div>
+
+        <div class="no-results" id="noResults" style="display: none;">
+            輸入品牌名稱開始分析
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        const PRIORITY_LABELS = {
+            1: '🔴 緊急',
+            2: '🟠 中等',
+            3: '🔵 普通',
+            4: '🟢 低',
+            5: '🟣 最低'
+        };
+
+        const SENTIMENT_LABELS = {
+            'positive': '正面 👍',
+            'negative': '負面 👎',
+            'neutral': '中立 😐',
+            'suggestion': '建議 💡'
+        };
+
+        const SENTIMENT_COLORS = {
+            'positive': '#10b981',
+            'negative': '#ef4444',
+            'neutral': '#f59e0b',
+            'suggestion': '#3b82f6'
+        };
+
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const brandName = document.getElementById('brandName').value.trim();
+            if (!brandName) return;
+
+            await analyzeReviews(brandName);
+        });
+
+        async function analyzeReviews(brandName) {
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const noResults = document.getElementById('noResults');
+            const errorContainer = document.getElementById('errorContainer');
+
+            loading.classList.add('show');
+            results.style.display = 'none';
+            noResults.style.display = 'none';
+            errorContainer.innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/api/monitor`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        brand_name: brandName,
+                        platforms: ['dcard', 'ptt', 'threads', 'instagram'],
+                        limit: 20
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 錯誤: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.total_reviews === 0) {
+                    noResults.style.display = 'block';
+                    noResults.innerHTML = `找不到關於「${brandName}」的評論`;
+                } else {
+                    displayResults(data);
+                    results.style.display = 'block';
+                }
+            } catch (error) {
+                errorContainer.innerHTML = `
+                    <div class="error">
+                        <strong>錯誤:</strong> ${error.message}<br>
+                        <small>確保 API 服務器正在運行 (localhost:8000)</small>
+                    </div>
+                `;
+                console.error('Error:', error);
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        function displayResults(data) {
+            displayStats(data);
+            displayCharts(data);
+            displayReviews(data);
+        }
+
+        function displayStats(data) {
+            const statsGrid = document.getElementById('statsGrid');
+            const dist = data.sentiment_distribution;
+
+            statsGrid.innerHTML = `
+                <div class="stat-card positive">
+                    <h3>正面評論</h3>
+                    <div class="number">${dist.positive || 0}</div>
+                </div>
+                <div class="stat-card negative">
+                    <h3>負面評論</h3>
+                    <div class="number">${dist.negative || 0}</div>
+                </div>
+                <div class="stat-card neutral">
+                    <h3>中立評論</h3>
+                    <div class="number">${dist.neutral || 0}</div>
+                </div>
+                <div class="stat-card suggestion">
+                    <h3>建議</h3>
+                    <div class="number">${dist.suggestion || 0}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>總評論數</h3>
+                    <div class="number">${data.total_reviews}</div>
+                </div>
+            `;
+        }
+
+        function displayCharts(data) {
+            const chartsContainer = document.getElementById('chartsContainer');
+
+            chartsContainer.innerHTML = `
+                <div class="chart-box">
+                    <h3>情感分佈</h3>
+                    <canvas id="sentimentCanvas"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>優先級分佈</h3>
+                    <canvas id="priorityCanvas"></canvas>
+                </div>
+            `;
+
+            // Draw charts after DOM update
+            setTimeout(() => {
+                drawSentimentChart(data.sentiment_distribution);
+                drawPriorityChart(data.priority_distribution);
+            }, 0);
+        }
+
+        function drawSentimentChart(distribution) {
+            const ctx = document.getElementById('sentimentCanvas')?.getContext('2d');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['正面', '負面', '中立', '建議'],
+                    datasets: [{
+                        data: [
+                            distribution.positive || 0,
+                            distribution.negative || 0,
+                            distribution.neutral || 0,
+                            distribution.suggestion || 0
+                        ],
+                        backgroundColor: [
+                            '#10b981',
+                            '#ef4444',
+                            '#f59e0b',
+                            '#3b82f6'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawPriorityChart(distribution) {
+            const ctx = document.getElementById('priorityCanvas')?.getContext('2d');
+            if (!ctx) return;
+
+            const priorityData = [
+                distribution['1'] || 0,
+                distribution['2'] || 0,
+                distribution['3'] || 0,
+                distribution['4'] || 0,
+                distribution['5'] || 0
+            ];
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['🔴 緊急', '🟠 中等', '🔵 普通', '🟢 低', '🟣 最低'],
+                    datasets: [{
+                        label: '評論數',
+                        data: priorityData,
+                        backgroundColor: [
+                            '#ef4444',
+                            '#f59e0b',
+                            '#3b82f6',
+                            '#10b981',
+                            '#8b5cf6'
+                        ],
+                        borderRadius: 5,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayReviews(data) {
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            
+            if (data.reviews.length === 0) {
+                reviewsContainer.innerHTML = '<p style="text-align: center; color: #999;">沒有評論</p>';
+                return;
+            }
+
+            const reviewsHTML = data.reviews.map(review => {
+                const sentimentBadgeClass = `badge-${review.sentiment}`;
+                const sentimentLabel = SENTIMENT_LABELS[review.sentiment] || review.sentiment;
+                const priorityClass = `priority-${review.priority}`;
+                const priorityLabel = PRIORITY_LABELS[review.priority] || `優先級 ${review.priority}`;
+
+                const keywordsHTML = review.keywords.map(kw => {
+                    const isNegative = kw.startsWith('-');
+                    const keywordClass = isNegative ? 'negative' : 'positive';
+                    const cleanKw = kw.replace(/^[-+]/, '');
+                    return `<span class="keyword ${keywordClass}">${cleanKw}</span>`;
+                }).join('');
+
+                const sourceIcon = {
+                    'dcard': '🎫',
+                    'ptt': '🗨️',
+                    'threads': '🧵',
+                    'instagram': '📸',
+                    'google_search': '🔍'
+                }[review.source] || '📝';
+
+                return `
+                    <div class="review-item ${priorityClass}">
+                        <div class="review-header">
+                            <div class="review-title">${escapeHtml(review.title)}</div>
+                            <span class="review-badge ${sentimentBadgeClass}">${sentimentLabel}</span>
+                        </div>
+                        <div class="review-content">${escapeHtml(review.content)}</div>
+                        <div class="keywords">${keywordsHTML}</div>
+                        <div class="review-meta">
+                            <span><strong class="priority-label">${priorityLabel}</strong></span>
+                            <span>${sourceIcon} ${review.source}</span>
+                            <span>分數: ${(review.sentiment_score * 100).toFixed(0)}%</span>
+                            <span>信心: ${(review.sentiment_confidence * 100).toFixed(0)}%</span>
+                        </div>
+                        <div style="margin-top: 14px;">
+                            <a href="${escapeHtml(review.url)}" target="_blank" style="color: #0071e3; text-decoration: none; font-size: 0.9em; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">查看原文 <span style="font-size: 1.1em;">↗</span></a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            reviewsContainer.innerHTML = `
+                <h2>評論列表 (按優先級排序)</h2>
+                ${reviewsHTML}
+            `;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Auto-focus on brand input
+        document.getElementById('brandName').focus();
+    </script>
+</body>
+</html>
