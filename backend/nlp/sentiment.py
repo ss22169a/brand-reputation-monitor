@@ -50,10 +50,29 @@ class SentimentAnalyzer:
         }
         
         self.negative_keywords = {
-            "爛": 2, "糟": 2, "差": 1.5, "不好": 1, "討厭": 2,
-            "失望": 1.5, "問題": 1, "缺點": 1, "有問題": 1.5,
-            "不滿": 1.5, "壞": 1.5, "垃圾": 2, "爛透": 2,
-            "後悔": 2, "浪費": 1.5, "騙": 2,
+            # 强烈负面
+            "爛": 2, "糟": 2, "垃圾": 2, "爛透": 2, "討厭": 2,
+            "後悔": 2, "騙": 2, "詐騙": 2, "破爛": 2,
+            # 中等负面
+            "差": 1.5, "不好": 1.5, "失望": 1.5, "有問題": 1.5,
+            "不滿": 1.5, "壞": 1.5, "浪費": 1.5, "虧": 1.5,
+            "缺陷": 1.5, "故障": 1.5, "壞掉": 1.5,
+            # 轻度负面
+            "問題": 1, "缺點": 1, "不夠": 1, "不足": 1,
+            "過期": 1.2, "損壞": 1.2, "破損": 1.2,
+            "沒用": 1.2, "無用": 1.2, "劣質": 1.5,
+            # 产品质量问题
+            "品質差": 2, "質量差": 2, "品質不好": 1.5,
+            "做工差": 1.5, "工藝差": 1.5,
+            # 售后问题
+            "售後差": 1.5, "服務差": 1.5, "無法退": 1.5,
+            "不退貨": 1.5, "不換貨": 1.5,
+            # 电池/性能问题
+            "電池壞": 2, "電池爆": 2, "發熱": 1.5,
+            "續航差": 1.5, "充不進": 1.5, "掉電": 1.5,
+            # 其他常见问题
+            "噪音": 1.2, "刮傷": 1, "掉漆": 1.2,
+            "生鏽": 1.5, "發霉": 1.5, "臭": 1.2,
         }
         
         self.suggestion_keywords = {
@@ -127,6 +146,7 @@ class SentimentAnalyzer:
         negative_score = 0.0
         suggestion_score = 0.0
         found_keywords = []
+        has_strong_negative = False  # 标记是否有强烈负面词
         
         text_lower = text.lower()
         
@@ -141,6 +161,9 @@ class SentimentAnalyzer:
             if keyword in text:
                 negative_score += weight
                 found_keywords.append(f"-{keyword}")
+                # 如果有权重 >= 2 的负面词，标记为强烈负面
+                if weight >= 2:
+                    has_strong_negative = True
         
         # Score suggestion keywords
         for keyword, weight in self.suggestion_keywords.items():
@@ -154,6 +177,11 @@ class SentimentAnalyzer:
             sentiment = "neutral"
             score = 0.5
             confidence = 0.3
+        # 如果有强烈负面词（权重 >= 2），直接判为负面（防止"开头正面+后面批评"的问题）
+        elif has_strong_negative and negative_score >= positive_score * 0.5:
+            sentiment = "negative"
+            confidence = min(negative_score / max(total_score, 1), 0.95)
+            score = max(0.05, 0.5 - (negative_score / 10))
         elif suggestion_score > positive_score and suggestion_score > negative_score:
             sentiment = "suggestion"
             confidence = suggestion_score / max(total_score, 1)
