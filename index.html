@@ -366,6 +366,35 @@
             font-weight: 500;
         }
 
+        .sentiment-filter {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .sentiment-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 1px solid #d5d5d7;
+            border-radius: 32px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .sentiment-btn:hover {
+            background: #f5f5f7;
+            border-color: #0071e3;
+        }
+
+        .sentiment-btn.active {
+            background: #0071e3;
+            color: white;
+            border-color: #0071e3;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -373,6 +402,10 @@
 
             .filter-input, .sort-select {
                 width: 100%;
+            }
+
+            .sentiment-filter {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -408,12 +441,19 @@
             <div class="reviews-container">
                 <h2>評論監控</h2>
                 
+                <div class="sentiment-filter" id="sentimentFilter" style="display: none; margin-bottom: 24px;">
+                    <button class="sentiment-btn active" data-filter="all">全部</button>
+                    <button class="sentiment-btn" data-filter="positive">正面</button>
+                    <button class="sentiment-btn" data-filter="negative">負面</button>
+                    <button class="sentiment-btn" data-filter="neutral">中立</button>
+                    <button class="sentiment-btn" data-filter="suggestion">建議</button>
+                </div>
+                
                 <div class="controls">
                     <input type="text" id="keywordFilter" class="filter-input" placeholder="過濾關鍵詞…">
                     <select id="sortSelect" class="sort-select">
                         <option value="priority">按嚴重性排序</option>
                         <option value="impact">按危害指數排序</option>
-                        <option value="confidence">按討論熱度排序</option>
                     </select>
                     <button onclick="exportReport()">導出報告</button>
                 </div>
@@ -448,6 +488,15 @@
 
         document.getElementById('keywordFilter').addEventListener('input', filterAndSort);
         document.getElementById('sortSelect').addEventListener('change', filterAndSort);
+
+        // 情感分类切换
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('sentiment-btn')) {
+                document.querySelectorAll('.sentiment-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                filterAndSort();
+            }
+        });
 
         async function analyzeReviews(brandName) {
             const loading = document.getElementById('loading');
@@ -502,6 +551,7 @@
         function displayResults(data, positiveRatio) {
             displayStats(data, positiveRatio);
             displayCharts(data);
+            document.getElementById('sentimentFilter').style.display = 'flex';
             filterAndSort();
         }
 
@@ -615,10 +665,13 @@
         function filterAndSort() {
             const keyword = document.getElementById('keywordFilter').value.toLowerCase();
             const sort = document.getElementById('sortSelect').value;
+            const sentimentFilter = document.querySelector('.sentiment-btn.active')?.dataset.filter || 'all';
 
-            let filtered = currentResults.filter(r => 
-                r.content.toLowerCase().includes(keyword) || r.title.toLowerCase().includes(keyword)
-            );
+            let filtered = currentResults.filter(r => {
+                const keywordMatch = r.content.toLowerCase().includes(keyword) || r.title.toLowerCase().includes(keyword);
+                const sentimentMatch = sentimentFilter === 'all' || r.sentiment === sentimentFilter;
+                return keywordMatch && sentimentMatch;
+            });
 
             if (sort === 'priority') {
                 filtered.sort((a, b) => a.priority - b.priority);
@@ -629,10 +682,7 @@
                     const scoreB = b.priority + (b.sentiment === 'negative' ? b.sentiment_confidence * b.sentiment_score : 0);
                     return scoreB - scoreA;
                 });
-            } else if (sort === 'confidence') {
-                // 讨论热度：按信心度（重复出现）排序
-                filtered.sort((a, b) => b.sentiment_confidence - a.sentiment_confidence);
-            }
+
 
             displayReviews(filtered);
         }
@@ -676,7 +726,7 @@
                         </div>
 
                         <div style="font-size: 0.85em; color: #999;">
-                            品牌信任度: ${(review.sentiment_confidence * 100).toFixed(0)}% | 分數: ${(review.sentiment_score * 100).toFixed(0)}%
+                            影響程度: ${(review.sentiment_score * 100).toFixed(0)}%
                         </div>
                     </div>
                 `;
