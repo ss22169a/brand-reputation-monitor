@@ -27,6 +27,100 @@
         header {
             text-align: center;
             margin-bottom: 80px;
+            position: relative;
+        }
+
+        .help-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f5f5f7;
+            border: 1px solid #d5d5d7;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .help-btn:hover {
+            background: white;
+            border-color: #0071e3;
+            color: #0071e3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-content h2 {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #1d1d1f;
+        }
+
+        .modal-content h3 {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #1d1d1f;
+        }
+
+        .modal-content p {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .modal-content ul {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        .modal-content li {
+            margin-bottom: 8px;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #1d1d1f;
         }
 
         header h1 {
@@ -413,6 +507,7 @@
 <body>
     <div class="container">
         <header>
+            <button class="help-btn" onclick="openModal()">?</button>
             <h1>品牌口碑監控</h1>
             <p>分析風向，智能排序優先級</p>
         </header>
@@ -459,6 +554,45 @@
                 </div>
 
                 <div id="reviewsContainer"></div>
+            </div>
+        </div>
+
+        <div class="modal" id="helpModal" onclick="if(event.target === this) closeModal()">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <h2>功能說明</h2>
+                
+                <h3>系統功能</h3>
+                <p>品牌口碑監控系統會自動搜尋網路上關於你的品牌的評論，分析每條評論的情感和問題，並按照危害程度排序。</p>
+
+                <h3>優先級分類</h3>
+                <ul>
+                    <li><strong>需即刻澄清</strong> — 立即回應，發表聲明澄清</li>
+                    <li><strong>導引風向</strong> — 發布正面新聞改變輿論</li>
+                    <li><strong>被動觀測</strong> — 監控但不行動</li>
+                    <li><strong>不予處理</strong> — 優先級最低，可忽略</li>
+                </ul>
+
+                <h3>情感分類</h3>
+                <ul>
+                    <li><strong>正面</strong> — 好評和讚譽</li>
+                    <li><strong>負面</strong> — 投訴和批評</li>
+                    <li><strong>中立</strong> — 事實陳述</li>
+                    <li><strong>客戶建議</strong> — 改進建議</li>
+                </ul>
+
+                <h3>使用方式</h3>
+                <ol>
+                    <li>輸入品牌名稱，點擊「開始監控」</li>
+                    <li>系統會搜尋並分析所有相關評論</li>
+                    <li>用情感標籤篩選（正面/負面/中立等）</li>
+                    <li>按嚴重性或危害指數排序</li>
+                    <li>標記處理狀態（未處理/進行中/已完成）</li>
+                    <li>導出報告作為參考</li>
+                </ol>
+
+                <h3>影響程度</h3>
+                <p>每條評論旁邊顯示的百分比，代表該評論的情感強度（0-100%）。數值越高代表情感表達越強烈。</p>
             </div>
         </div>
     </div>
@@ -766,6 +900,14 @@
         function escapeHtml(text) {
             const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function openModal() {
+            document.getElementById('helpModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('helpModal').classList.remove('show');
         }
 
         document.getElementById('brandName').focus();
