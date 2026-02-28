@@ -24,14 +24,16 @@ class SerpAPIScraper(BaseScraper):
         
         reviews = []
         
-        # Generate search queries
+        # Generate search queries - more comprehensive
         queries = [
             f"{self.brand_name} 評論",
             f"{self.brand_name} 缺點",
             f"{self.brand_name} 品質",
+            f"{self.brand_name} 不好",
+            f"{self.brand_name} review",
         ]
         
-        for query in queries[:2]:  # Limit to 2 queries to save API quota
+        for query in queries:  # Search all queries
             try:
                 print(f"  🔍 查詢: {query}")
                 results = await self._search(query)
@@ -65,7 +67,7 @@ class SerpAPIScraper(BaseScraper):
                     "q": query,
                     "engine": "google",
                     "api_key": self.api_key,
-                    "num": 10,
+                    "num": 20,  # Get 20 results instead of 10
                     "hl": "zh-TW",  # Traditional Chinese
                 }
                 
@@ -74,22 +76,30 @@ class SerpAPIScraper(BaseScraper):
                 
                 data = response.json()
                 
+                # Debug: print raw response
+                print(f"      API 返回 {len(data.get('organic_results', []))} 個結果")
+                
                 # Extract organic results
                 organic_results = data.get("organic_results", [])
                 
-                for result in organic_results[:8]:
+                for result in organic_results:
                     try:
                         title = result.get("title", "")
                         url = result.get("link", "")
                         snippet = result.get("snippet", "")
                         
-                        if not title or not url:
+                        # Skip if no title or no URL
+                        if not title:
                             continue
+                        
+                        # If URL is missing but we have content, still include it
+                        if not url:
+                            url = ""
                         
                         review = Review(
                             source="google",
                             title=title,
-                            content=snippet[:500],
+                            content=snippet[:500] if snippet else "(無摘要)",
                             author="Google Search",
                             rating=None,
                             url=url,
@@ -97,7 +107,9 @@ class SerpAPIScraper(BaseScraper):
                             posted_at=None,
                         )
                         reviews.append(review)
+                        
                     except Exception as e:
+                        print(f"      解析錯誤: {e}")
                         continue
         
         except Exception as e:
