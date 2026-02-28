@@ -498,11 +498,11 @@
             white-space: nowrap;
         }
 
-        .priority-1 { background: #ff3b30; color: white; }
-        .priority-2 { background: #ff9500; color: white; }
-        .priority-3 { background: #007aff; color: white; }
-        .priority-4 { background: #34c759; color: white; }
-        .priority-5 { background: #a2845d; color: white; }
+        .priority-1 { background: #ff3b30; color: white; }  /* Critical - 紅 */
+        .priority-2 { background: #ff9500; color: white; }  /* Strategic - 橙 */
+        .priority-3 { background: #007aff; color: white; }  /* Operational - 藍 */
+        .priority-4 { background: #34c759; color: white; }  /* Opportunities - 綠 */
+        .priority-5 { background: #999999; color: white; }  /* Neutral - 灰 */
 
         .review-header {
             display: flex;
@@ -742,12 +742,6 @@
                     </div>
                 </div>
 
-                <div class="pagination" id="pagination" style="display: none; margin-bottom: 24px; text-align: center; gap: 16px; justify-content: center;">
-                    <button onclick="previousPage()" class="btn-small">上一頁</button>
-                    <span id="pageInfo" style="font-weight: 600; color: #1d1d1f; min-width: 150px;"></span>
-                    <button onclick="nextPage()" class="btn-small">下一頁</button>
-                </div>
-
                 <div id="reviewsContainer"></div>
             </div>
         </div>
@@ -760,12 +754,13 @@
                 <h3>系統功能</h3>
                 <p>品牌口碑監控系統會自動搜尋網路上關於你的品牌的評論，分析每條評論的情感和問題，並按照危害程度排序。</p>
 
-                <h3>優先級分類</h3>
+                <h3>優先級分類（4 級策略）</h3>
                 <ul>
-                    <li><strong>需即刻澄清</strong> — 立即回應，發表聲明澄清</li>
-                    <li><strong>導引風向</strong> — 發布正面新聞改變輿論</li>
-                    <li><strong>被動觀測</strong> — 監控但不行動</li>
-                    <li><strong>不予處理</strong> — 優先級最低，可忽略</li>
+                    <li><strong>Critical - 立刻處理</strong> — 品質質疑、服務衝突、品牌誠信受損，必須立即回應</li>
+                    <li><strong>Strategic - 優化溝通</strong> — 品牌忠誠度下滑，需要改變消費者心態</li>
+                    <li><strong>Operational - 產品優化</strong> — 使用痛點和流程阻礙，需要改進產品體驗</li>
+                    <li><strong>Opportunities - 乘勝追擊</strong> — 購買意圖和功能許願，高轉化潛力</li>
+                    <li><strong>Neutral</strong> — 無特定需求，無需行動</li>
                 </ul>
 
                 <h3>情感分類</h3>
@@ -799,11 +794,19 @@
         const ITEMS_PER_PAGE = 10;
 
         const PRIORITY_LABELS = {
-            1: '需即刻澄清',
-            2: '導引風向',
-            3: '被動觀測',
-            4: '不予處理',
-            5: '不予處理'
+            1: 'Critical - 立刻處理',
+            2: 'Strategic - 優化溝通',
+            3: 'Operational - 產品優化',
+            4: 'Opportunities - 乘勝追擊',
+            5: 'Neutral - 無需行動'
+        };
+
+        const PRIORITY_COLORS = {
+            1: '#ff3b30',  // 紅色
+            2: '#ff9500',  // 橙色
+            3: '#007aff',  // 藍色
+            4: '#34c759',  // 綠色
+            5: '#999999'   // 灰色
         };
 
         const SENTIMENT_LABELS = {
@@ -976,11 +979,11 @@
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['即刻澄清', '導引風向', '被動觀測', '不予處理', '不予處理'],
+                    labels: ['Critical\n立刻處理', 'Strategic\n優化溝通', 'Operational\n產品優化', 'Opportunities\n乘勝追擊', 'Neutral\n無需行動'],
                     datasets: [{
                         label: '評論數',
                         data: [distribution['1'] || 0, distribution['2'] || 0, distribution['3'] || 0, distribution['4'] || 0, distribution['5'] || 0],
-                        backgroundColor: ['#ff3b30', '#ff9500', '#007aff', '#34c759', '#a2845d'],
+                        backgroundColor: ['#ff3b30', '#ff9500', '#007aff', '#34c759', '#999999'],
                         borderRadius: 5
                     }]
                 },
