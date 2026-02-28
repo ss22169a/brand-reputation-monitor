@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapers.dcard import DcardScraper
+from scrapers.google import GoogleSearchScraper
 from nlp.sentiment import SentimentAnalyzer, SentimentResult
 from nlp.classifier import ProblemClassifier
 
@@ -109,9 +109,9 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
         raise HTTPException(status_code=503, detail="NLP 模型未初始化")
     
     try:
-        # Step 1: Scrape reviews from Dcard
-        print(f"\n[1/3] 從 Dcard 抓取評論: {request.brand_name}")
-        scraper = DcardScraper(brand_name=request.brand_name)
+        # Step 1: Scrape reviews from Google Search
+        print(f"\n[1/3] Google 搜尋: {request.brand_name}")
+        scraper = GoogleSearchScraper(brand_name=request.brand_name)
         reviews = await scraper.scrape()
         reviews = reviews[:request.limit] if request.limit else reviews
         

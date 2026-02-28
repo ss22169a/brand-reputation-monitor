@@ -19,7 +19,11 @@ class DcardScraper(BaseScraper):
         self.timeout = timeout
         self.base_url = "https://www.dcard.tw/api/v2"
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Referer": "https://www.dcard.tw/",
+            "Accept": "application/json",
+            "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+            "Origin": "https://www.dcard.tw",
         }
     
     async def scrape(self) -> List[Review]:
@@ -129,37 +133,30 @@ class DcardScraper(BaseScraper):
                 if not isinstance(posts, list):
                     return reviews
                 
+                print(f"    [{forum}] 獲得 {len(posts)} 篇貼文，開始過濾...")
+                
                 # Filter posts by brand + problem keywords
+                filtered_count = 0
                 for post in posts:
                     title = post.get("title", "")
                     content = post.get("content", "")
                     full_text = f"{title} {content}".lower()
                     
-                    # Check if post mentions brand
+                    # Check if post mentions brand (more lenient)
                     if not self._contains_brand_loose(full_text, brand_name):
                         continue
                     
-                    # Check if post contains problem keywords
-                    has_problem_keyword = False
-                    for category, keywords in problem_keywords.items():
-                        if any(kw in full_text for kw in keywords):
-                            has_problem_keyword = True
-                            break
-                    
-                    # If not a problem post, might still be relevant
-                    # But prioritize problem posts
-                    if not has_problem_keyword:
-                        # Only include if mentions brand + some evaluation
-                        if not any(word in full_text for word in ["好", "爛", "差", "不錯", "推薦", "踩雷"]):
-                            continue
+                    filtered_count += 1
                     
                     # Convert to review
                     review = self._post_to_review(post)
                     if review:
                         reviews.append(review)
+                
+                print(f"    [{forum}] 提取 {len(reviews)} 篇貼文 (過濾自 {filtered_count} 篇包含品牌名的貼文)")
         
         except Exception as e:
-            pass
+            print(f"    [{forum}] 錯誤: {e}")
         
         return reviews
     
