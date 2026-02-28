@@ -37,9 +37,28 @@ class SentimentAnalyzer:
         self.classifier = None
         
         # Initialize keywords with defaults
-        self.positive_keywords = {"好": 2, "棒": 2, "讚": 2, "優": 1}
-        self.negative_keywords = {"爛": 2, "糟": 2, "垃圾": 2, "討厭": 2}
-        self.suggestion_keywords = {"建議": 1, "希望": 0.8}
+        self.positive_keywords = {
+            "好": 2, "棒": 2, "讚": 2, "優": 1, "完美": 2,
+            "滿意": 1.5, "喜歡": 1, "推薦": 1.5, "愛": 1,
+            "很好": 1.5, "不錯": 1, "贊": 1.5, "開心": 1,
+            "超讚": 2, "完美無缺": 2,
+        }
+        self.negative_keywords = {
+            "爛": 2, "糟": 2, "垃圾": 2, "爛透": 2, "討厭": 2,
+            "後悔": 2, "騙": 2, "詐騙": 2, "破爛": 2,
+            "差": 1.5, "很差": 1.5, "差勁": 1.5, "很差勁": 1.5,
+            "不好": 1.5, "失望": 1.5, "有問題": 1.5,
+            "不滿": 1.5, "壞": 1.5, "浪費": 1.5, "虧": 1.5,
+            "缺陷": 1.5, "故障": 1.5, "壞掉": 1.5,
+            "問題": 1, "缺點": 1, "不夠": 1, "不足": 1,
+            "過期": 1.2, "損壞": 1.2, "破損": 1.2,
+            "沒用": 1.2, "無用": 1.2, "劣質": 1.5,
+        }
+        self.suggestion_keywords = {
+            "建議": 1, "希望": 0.8, "可以": 0.5, "應該": 0.8,
+            "需要": 0.7, "改進": 1, "改善": 1, "優化": 1,
+            "如果": 0.5, "最好": 0.8,
+        }
         self.critical_keywords = {}
         self.strategic_keywords = {}
         self.operational_keywords = {}
@@ -160,12 +179,15 @@ class SentimentAnalyzer:
             return None
     
     def _rule_based_analyze(self, text: str) -> SentimentResult:
-        """Rule-based sentiment analysis using keywords"""
-        positive_score = 0.0
-        negative_score = 0.0
-        suggestion_score = 0.0
+        """Rule-based sentiment analysis using 4-level priority keywords
+        
+        NEW LOGIC (2026-03-01):
+        - CRITICAL 詞 → sentiment=negative, priority=1, status=待處理
+        - STRATEGIC 詞 → sentiment=根據內容評估, priority=2, status=優化溝通
+        - OPERATIONAL 詞 → sentiment=neutral, priority=3, status=產品優化
+        - OPPORTUNITIES 詞 → sentiment=positive, priority=4, status=乘勝追擊
+        """
         found_keywords = []
-        has_strong_negative = False
         
         # 4 級優先級計分
         critical_score = 0.0
@@ -173,89 +195,62 @@ class SentimentAnalyzer:
         operational_score = 0.0
         opportunity_score = 0.0
         
-        text_lower = text.lower()
-        
-        # Score positive keywords
-        for keyword, weight in self.positive_keywords.items():
-            if keyword in text:
-                positive_score += weight
-                found_keywords.append(f"+{keyword}")
-        
-        # Score negative keywords
-        for keyword, weight in self.negative_keywords.items():
-            if keyword in text:
-                negative_score += weight
-                found_keywords.append(f"-{keyword}")
-                if weight >= 2:
-                    has_strong_negative = True
-        
-        # Score suggestion keywords
-        for keyword, weight in self.suggestion_keywords.items():
-            if keyword in text:
-                suggestion_score += weight
-        
         # 計分 4 級優先級
         for keyword, weight in self.critical_keywords.items():
             if keyword in text:
                 critical_score += weight
+                found_keywords.append(f"CRITICAL:{keyword}")
                 
         for keyword, weight in self.strategic_keywords.items():
             if keyword in text:
                 strategic_score += weight
+                found_keywords.append(f"STRATEGIC:{keyword}")
                 
         for keyword, weight in self.operational_keywords.items():
             if keyword in text:
                 operational_score += weight
+                found_keywords.append(f"OPERATIONAL:{keyword}")
                 
         for keyword, weight in self.opportunity_keywords.items():
             if keyword in text:
                 opportunity_score += weight
+                found_keywords.append(f"OPPORTUNITIES:{keyword}")
         
-        # Determine sentiment
-        total_score = positive_score + negative_score + suggestion_score
-        
-        # 決定 4 級優先級
+        # 決定優先級和情感
         priority = 5  # Default: neutral
         category = "neutral"
+        sentiment = "neutral"
+        score = 0.5
+        confidence = 0.3
         
+        # 優先級判斷（按優先順序）
         if critical_score > 0:
             priority = 1
             category = "critical"
+            sentiment = "negative"  # CRITICAL → 負面
+            score = 0.2
+            confidence = 0.9
         elif strategic_score > 0:
             priority = 2
             category = "strategic"
+            # STRATEGIC 需要評估：跟客服/售後相關詞 → 負面，其他 → 中立
+            customer_service_keywords = {"客服", "服務", "售後", "回應", "處理", "態度", "回覆"}
+            is_customer_service_issue = any(kw in text for kw in customer_service_keywords)
+            sentiment = "negative" if is_customer_service_issue else "neutral"
+            score = 0.3 if sentiment == "negative" else 0.5
+            confidence = 0.7
         elif operational_score > 0:
             priority = 3
             category = "operational"
+            sentiment = "neutral"  # OPERATIONAL → 中立
+            score = 0.5
+            confidence = 0.6
         elif opportunity_score > 0:
             priority = 4
             category = "opportunity"
-        
-        if total_score == 0:
-            sentiment = "neutral"
-            score = 0.5
-            confidence = 0.3
-        # 如果有强烈负面词（权重 >= 2），直接判为负面（防止"开头正面+后面批评"的问题）
-        elif has_strong_negative and negative_score >= positive_score * 0.5:
-            sentiment = "negative"
-            confidence = min(negative_score / max(total_score, 1), 0.95)
-            score = max(0.05, 0.5 - (negative_score / 10))
-        elif suggestion_score > positive_score and suggestion_score > negative_score:
-            sentiment = "suggestion"
-            confidence = suggestion_score / max(total_score, 1)
-            score = 0.6
-        elif positive_score > negative_score:
-            sentiment = "positive"
-            confidence = positive_score / max(total_score, 1)
-            score = min(0.95, 0.5 + (positive_score / 10))
-        elif negative_score > positive_score:
-            sentiment = "negative"
-            confidence = negative_score / max(total_score, 1)
-            score = max(0.05, 0.5 - (negative_score / 10))
-        else:
-            sentiment = "neutral"
-            score = 0.5
-            confidence = 0.4
+            sentiment = "positive"  # OPPORTUNITIES → 正面
+            score = 0.8
+            confidence = 0.8
         
         return SentimentResult(
             text=text,
