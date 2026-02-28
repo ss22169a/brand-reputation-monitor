@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapers.playwright_google import PlaywrightGoogleScraper
+from scrapers.google_url import GoogleUrlScraper
 from nlp.sentiment import SentimentAnalyzer, SentimentResult
 from nlp.classifier import ProblemClassifier
 
@@ -49,8 +49,9 @@ async def startup_event():
 class MonitoringRequest(BaseModel):
     """Request to start monitoring a brand"""
     brand_name: str
-    platforms: List[str] = ["google_search"]
-    limit: Optional[int] = 10
+    google_url: Optional[str] = None
+    platforms: List[str] = ["google"]
+    limit: Optional[int] = 20
 
 
 class ReviewAnalysis(BaseModel):
@@ -109,9 +110,9 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
         raise HTTPException(status_code=503, detail="NLP 模型未初始化")
     
     try:
-        # Step 1: Scrape reviews from Google Search using Playwright
-        print(f"\n[1/3] Google 搜尋 (Playwright): {request.brand_name}")
-        scraper = PlaywrightGoogleScraper(brand_name=request.brand_name)
+        # Step 1: Scrape reviews from Google Search URL
+        print(f"\n[1/3] Google 搜尋結果分析: {request.brand_name}")
+        scraper = GoogleUrlScraper(brand_name=request.brand_name, google_url=request.google_url)
         reviews = await scraper.scrape()
         reviews = reviews[:request.limit] if request.limit else reviews
         

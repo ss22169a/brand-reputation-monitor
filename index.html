@@ -372,13 +372,16 @@
         <div class="search-box">
             <form id="searchForm">
                 <input 
-                    type="text" 
-                    id="brandName" 
-                    placeholder="輸入品牌名稱…" 
+                    type="url" 
+                    id="searchUrl" 
+                    placeholder="貼上 Google 搜尋 URL (例: https://www.google.com/search?q=BLANK+SPACE+評論)" 
                     required
                 >
                 <button type="submit" id="searchBtn">分析</button>
             </form>
+            <p style="margin-top: 12px; color: #86868b; font-size: 0.9em;">
+                💡 使用方式：在 Google 搜尋你想要的品牌 + 評論詞，複製 URL 貼上這裡
+            </p>
         </div>
 
         <div class="loading" id="loading">
@@ -427,10 +430,10 @@
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const brandName = document.getElementById('brandName').value.trim();
-            if (!brandName) return;
+            const searchUrl = document.getElementById('searchUrl').value.trim();
+            if (!searchUrl) return;
 
-            await analyzeReviews(brandName);
+            await analyzeReviews(searchUrl);
         });
 
         async function analyzeReviews(brandName) {
@@ -451,8 +454,9 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        brand_name: brandName,
-                        platforms: ['dcard', 'ptt', 'threads', 'instagram'],
+                        brand_name: query,
+                        google_url: googleUrl,
+                        platforms: ['google'],
                         limit: 20
                     })
                 });
@@ -465,7 +469,7 @@
 
                 if (data.total_reviews === 0) {
                     noResults.style.display = 'block';
-                    noResults.innerHTML = `找不到關於「${brandName}」的評論`;
+                    noResults.innerHTML = `沒有找到結果。請確保 URL 正確並且包含搜尋結果。`;
                 } else {
                     displayResults(data);
                     results.style.display = 'block';
@@ -690,8 +694,8 @@
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        // Auto-focus on brand input
-        document.getElementById('brandName').focus();
+        // Auto-focus on URL input
+        document.getElementById('searchUrl').focus();
     </script>
 </body>
 </html>
