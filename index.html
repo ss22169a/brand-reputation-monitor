@@ -594,7 +594,10 @@
                         <div class="review-content">${escapeHtml(review.content)}</div>
 
                         <div class="review-actions">
-                            ${review.url && review.url !== 'about:blank' ? `<button class="btn-small btn-source" onclick="window.open('${review.url}', '_blank')">🔗 查看原文</button>` : '<span style="color: #999; font-size: 0.9em;">⚠️ URL 已失效</span>'}
+                            ${review.url && review.url !== 'about:blank' ? 
+                                `<button class="btn-small btn-source" onclick="window.open('${review.url}', '_blank')">🔗 查看原文</button>` : 
+                                `<button class="btn-small btn-source" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(review.content.substring(0, 50))}', '_blank')">🔍 Google 搜尋</button>`
+                            }
                             <select class="status-select" onchange="saveReviewStatus(${idx}, this.value)">
                                 <option value="pending" ${savedStatus === 'pending' ? 'selected' : ''}>⏳ 未處理</option>
                                 <option value="processing" ${savedStatus === 'processing' ? 'selected' : ''}>⚙️ 進行中</option>
