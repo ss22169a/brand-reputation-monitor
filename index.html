@@ -209,6 +209,21 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
+        .priority-pill {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 32px;
+            font-weight: 600;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .priority-1 { background: #ff3b30; color: white; }
+        .priority-2 { background: #ff9500; color: white; }
+        .priority-3 { background: #007aff; color: white; }
+        .priority-4 { background: #34c759; color: white; }
+        .priority-5 { background: #a2845d; color: white; }
+
         .review-header {
             display: flex;
             justify-content: space-between;
@@ -409,11 +424,11 @@
         let currentResults = [];
 
         const PRIORITY_LABELS = {
-            1: '即刻澄清 (Counter-Action)',
-            2: '導引風向 (Steer)',
-            3: '被動觀測 (Monitor)',
-            4: '不予處理 (Ignore)',
-            5: '不予處理 (Ignore)'
+            1: '即刻澄清',
+            2: '導引風向',
+            3: '被動觀測',
+            4: '不予處理',
+            5: '不予處理'
         };
 
         const SENTIMENT_LABELS = {
@@ -626,12 +641,12 @@
                 return `
                     <div class="review-item">
                         <div class="review-header">
-                            <div>
-                                <div style="margin-bottom: 8px; display: flex; gap: 12px; align-items: center;">
-                                    <span style="color: #555; font-weight: 700; padding: 6px 12px; background: #f5f5f7; border-radius: 16px; font-size: 0.9em;">${PRIORITY_LABELS[review.priority]}</span>
+                            <div style="width: 100%;">
+                                <div style="margin-bottom: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                    <span class="priority-pill priority-${review.priority}">${PRIORITY_LABELS[review.priority]}</span>
                                     <span class="sentiment-badge badge-${review.sentiment}">${SENTIMENT_LABELS[review.sentiment]}</span>
                                 </div>
-                                <strong style="font-size: 1.05em;">${escapeHtml(review.title || review.content.substring(0, 40))}</strong>
+                                <strong style="font-size: 1.05em; display: block;">${escapeHtml(review.title || review.content.substring(0, 40))}</strong>
                             </div>
                         </div>
 
