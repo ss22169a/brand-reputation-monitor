@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -34,20 +34,17 @@
             font-weight: 700;
             color: #1d1d1f;
             margin-bottom: 8px;
-            letter-spacing: -0.5px;
         }
 
         header p {
             font-size: 1.1em;
             color: #86868b;
-            font-weight: 400;
         }
 
         .input-box {
             background: #f9f9f9;
             padding: 40px;
             border-radius: 20px;
-            box-shadow: none;
             border: 1px solid #f0f0f0;
             margin-bottom: 40px;
         }
@@ -61,66 +58,69 @@
             font-weight: 600;
             color: #1d1d1f;
             margin-bottom: 8px;
-            font-size: 0.95em;
         }
 
-        .input-group input,
-        .input-group textarea {
+        .input-group input {
             width: 100%;
             padding: 14px 16px;
             border: 1px solid #d5d5d7;
             border-radius: 12px;
             font-size: 1em;
             background: white;
-            font-family: inherit;
-            transition: all 0.3s;
         }
 
-        .input-group input:focus,
-        .input-group textarea:focus {
+        .input-group input:focus {
             outline: none;
             border-color: #555;
             box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
         }
 
-        .input-group textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
         .submit-btn {
             width: 100%;
-            padding: 14px 32px;
+            padding: 14px;
             background: #0071e3;
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 1em;
-            cursor: pointer;
             font-weight: 600;
-            letter-spacing: 0.3px;
+            cursor: pointer;
             transition: all 0.3s;
         }
 
         .submit-btn:hover {
             background: #0077ed;
-            box-shadow: 0 4px 12px rgba(0,113,227,0.3);
         }
 
-        .submit-btn:disabled {
-            background: #d5d5d7;
-            cursor: not-allowed;
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
-        .help-text {
-            margin-top: 12px;
-            color: #86868b;
-            font-size: 0.9em;
+        .filter-input, .sort-select {
+            padding: 10px 14px;
+            border: 1px solid #d5d5d7;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+
+        .controls button {
+            padding: 10px 16px;
+            background: #f5f5f7;
+            border: 1px solid #d5d5d7;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .controls button:hover {
+            background: #e8e8e8;
         }
 
         .loading {
             text-align: center;
-            color: #1d1d1f;
             display: none;
             margin: 40px 0;
         }
@@ -144,6 +144,98 @@
             100% { transform: rotate(360deg); }
         }
 
+        .risk-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .risk-excellent { background: #d1fae5; color: #065f46; }
+        .risk-normal { background: #fef3c7; color: #92400e; }
+        .risk-danger { background: #fee2e2; color: #991b1b; }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8em;
+        }
+
+        .badge-positive { background: #d1fae5; color: #065f46; }
+        .badge-negative { background: #fee2e2; color: #991b1b; }
+        .badge-neutral { background: #fef3c7; color: #92400e; }
+        .badge-suggestion { background: #dbeafe; color: #1e40af; }
+
+        .review-item {
+            border-left: 4px solid #0071e3;
+            padding: 18px;
+            margin-bottom: 12px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s;
+        }
+
+        .review-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .review-content {
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .review-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            border: 1px solid #d5d5d7;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .btn-small:hover {
+            background: #f5f5f7;
+        }
+
+        .btn-source {
+            background: #0071e3;
+            color: white;
+            border: none;
+        }
+
+        .btn-source:hover {
+            background: #0077ed;
+        }
+
+        .status-select {
+            padding: 6px 10px;
+            border: 1px solid #d5d5d7;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -165,7 +257,6 @@
             margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            font-weight: 500;
         }
 
         .stat-card .number {
@@ -191,7 +282,6 @@
         .chart-box h3 {
             margin-bottom: 20px;
             color: #1d1d1f;
-            font-size: 1.05em;
             font-weight: 600;
         }
 
@@ -209,86 +299,6 @@
             font-weight: 600;
         }
 
-        .review-item {
-            border-left: 4px solid #0071e3;
-            padding: 18px;
-            margin-bottom: 12px;
-            background: white;
-            border-radius: 12px;
-            transition: all 0.2s;
-            border: 1px solid #f0f0f0;
-        }
-
-        .review-item:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .review-item.priority-1 { border-left-color: #ff3b30; }
-        .review-item.priority-2 { border-left-color: #ff9500; }
-        .review-item.priority-3 { border-left-color: #007aff; }
-        .review-item.priority-4 { border-left-color: #34c759; }
-        .review-item.priority-5 { border-left-color: #a2845d; }
-
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 12px;
-            gap: 12px;
-        }
-
-        .review-title {
-            font-weight: 600;
-            color: #1d1d1f;
-            flex: 1;
-            font-size: 1.02em;
-        }
-
-        .review-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .badge-positive { background: #d1fae5; color: #065f46; }
-        .badge-negative { background: #fee2e2; color: #991b1b; }
-        .badge-suggestion { background: #dbeafe; color: #1e40af; }
-
-        .review-content {
-            color: #555;
-            margin-bottom: 12px;
-            line-height: 1.6;
-            font-size: 0.98em;
-        }
-
-        .review-meta {
-            display: flex;
-            gap: 16px;
-            font-size: 0.85em;
-            color: #86868b;
-            flex-wrap: wrap;
-        }
-
-        .priority-label {
-            font-weight: 600;
-        }
-
-        .priority-1 .priority-label { color: #ff3b30; }
-        .priority-2 .priority-label { color: #ff9500; }
-        .priority-3 .priority-label { color: #007aff; }
-        .priority-4 .priority-label { color: #34c759; }
-        .priority-5 .priority-label { color: #a2845d; }
-
-        .no-results {
-            text-align: center;
-            color: #86868b;
-            padding: 60px 40px;
-            font-size: 1.1em;
-        }
-
         .error {
             background: #fee2e2;
             border: 1px solid #f5c2c2;
@@ -296,41 +306,15 @@
             padding: 16px;
             border-radius: 12px;
             margin-bottom: 20px;
-            font-size: 0.95em;
-        }
-
-        .keywords {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-
-        .keyword {
-            display: inline-block;
-            background: #f5f5f7;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 0.8em;
-            color: #555;
-            font-weight: 500;
         }
 
         @media (max-width: 768px) {
-            header h1 {
-                font-size: 2.5em;
+            .controls {
+                flex-direction: column;
             }
 
-            .input-box {
-                padding: 30px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .charts-container {
-                grid-template-columns: 1fr;
+            .filter-input, .sort-select {
+                width: 100%;
             }
         }
     </style>
@@ -339,31 +323,22 @@
     <div class="container">
         <header>
             <h1>品牌口碑監控</h1>
-            <p>分析評論，智能排序優先級</p>
+            <p>分析風向，智能排序優先級</p>
         </header>
 
         <div class="input-box">
             <form id="searchForm">
                 <div class="input-group">
                     <label for="brandName">品牌名稱</label>
-                    <input 
-                        type="text" 
-                        id="brandName" 
-                        placeholder="例: Apple, BLANK SPACE, Acer…" 
-                        required
-                    >
+                    <input type="text" id="brandName" placeholder="例: Apple, BLANK SPACE…" required>
                 </div>
-
                 <button type="submit" class="submit-btn">開始監控</button>
             </form>
-            <p class="help-text">
-                💡 輸入品牌名稱，系統自動搜尋並分析風向
-            </p>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>正在搜尋和分析中…（約 5-10 秒）</p>
+            <p>正在搜尋和分析中…</p>
         </div>
 
         <div id="errorContainer"></div>
@@ -371,98 +346,123 @@
         <div id="results" style="display: none;">
             <div class="stats-grid" id="statsGrid"></div>
             <div class="charts-container" id="chartsContainer"></div>
-            <div class="reviews-container" id="reviewsContainer"></div>
-        </div>
 
-        <div class="no-results" id="noResults" style="display: none;">
-            輸入品牌名稱開始監控
+            <div class="reviews-container">
+                <h2>評論監控</h2>
+                
+                <div class="controls">
+                    <input type="text" id="keywordFilter" class="filter-input" placeholder="🔍 過濾關鍵詞…">
+                    <select id="sortSelect" class="sort-select">
+                        <option value="priority">按嚴重性排序</option>
+                        <option value="sentiment">按情感排序</option>
+                    </select>
+                    <button onclick="exportReport()">📊 導出報告</button>
+                </div>
+
+                <div id="reviewsContainer"></div>
+            </div>
         </div>
     </div>
 
     <script>
         const API_URL = 'http://localhost:8000';
+        let currentResults = [];
 
         const PRIORITY_LABELS = {
-            1: '🔴 緊急',
-            2: '🟠 中等',
-            3: '🔵 普通',
-            4: '🟢 低',
-            5: '🟣 最低'
+            1: '🔴 緊急', 2: '🟠 中等', 3: '🔵 普通', 4: '🟢 低', 5: '🟣 最低'
         };
 
         const SENTIMENT_LABELS = {
-            'positive': '正面 👍',
-            'negative': '負面 👎',
-            'suggestion': '建議 💡'
+            'positive': '正面', 'negative': '負面', 'neutral': '中立', 'suggestion': '建議'
         };
 
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const brandName = document.getElementById('brandName').value.trim();
-            
             if (!brandName) return;
-
             await analyzeReviews(brandName);
         });
+
+        document.getElementById('keywordFilter').addEventListener('input', filterAndSort);
+        document.getElementById('sortSelect').addEventListener('change', filterAndSort);
 
         async function analyzeReviews(brandName) {
             const loading = document.getElementById('loading');
             const results = document.getElementById('results');
-            const noResults = document.getElementById('noResults');
             const errorContainer = document.getElementById('errorContainer');
 
             loading.classList.add('show');
             results.style.display = 'none';
-            noResults.style.display = 'none';
             errorContainer.innerHTML = '';
 
             try {
                 const response = await fetch(`${API_URL}/api/analyze`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        brand_name: brandName
-                    })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({brand_name: brandName})
                 });
 
-                if (!response.ok) {
-                    throw new Error(`API 錯誤: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`API 錯誤: ${response.status}`);
 
                 const data = await response.json();
 
                 if (data.total_reviews === 0) {
-                    noResults.style.display = 'block';
-                    noResults.innerHTML = '沒有分析結果';
+                    errorContainer.innerHTML = '<div class="error">沒有找到相關評論</div>';
                 } else {
-                    displayResults(data);
+                    currentResults = data.reviews;
+                    
+                    // 計算風向
+                    const positive = data.sentiment_distribution.positive || 0;
+                    const negative = data.sentiment_distribution.negative || 0;
+                    const total = data.total_reviews;
+                    const positiveRatio = total > 0 ? positive / total : 0;
+
+                    // 保存搜尋狀態
+                    saveSearchState({
+                        brand_name: brandName,
+                        timestamp: new Date().toISOString(),
+                        total: total,
+                        positive_ratio: positiveRatio,
+                        reviews: currentResults
+                    });
+
+                    displayResults(data, positiveRatio);
                     results.style.display = 'block';
                 }
             } catch (error) {
-                errorContainer.innerHTML = `
-                    <div class="error">
-                        <strong>錯誤:</strong> ${error.message}
-                    </div>
-                `;
+                errorContainer.innerHTML = `<div class="error"><strong>錯誤:</strong> ${error.message}</div>`;
             } finally {
                 loading.classList.remove('show');
             }
         }
 
-        function displayResults(data) {
-            displayStats(data);
+        function displayResults(data, positiveRatio) {
+            displayStats(data, positiveRatio);
             displayCharts(data);
-            displayReviews(data);
+            filterAndSort();
         }
 
-        function displayStats(data) {
+        function displayStats(data, positiveRatio) {
             const statsGrid = document.getElementById('statsGrid');
             const dist = data.sentiment_distribution;
 
+            let riskClass, riskText;
+            if (positiveRatio >= 0.6) {
+                riskClass = 'risk-excellent';
+                riskText = '🟢 優秀';
+            } else if (positiveRatio <= 0.4) {
+                riskClass = 'risk-danger';
+                riskText = '🔴 危險';
+            } else {
+                riskClass = 'risk-normal';
+                riskText = '🟡 一般';
+            }
+
             statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <h3>風向分類</h3>
+                    <div class="risk-badge ${riskClass}">${riskText}</div>
+                </div>
                 <div class="stat-card">
                     <h3>正面評論</h3>
                     <div class="number" style="color: #34c759;">${dist.positive || 0}</div>
@@ -472,8 +472,8 @@
                     <div class="number" style="color: #ff3b30;">${dist.negative || 0}</div>
                 </div>
                 <div class="stat-card">
-                    <h3>建議</h3>
-                    <div class="number" style="color: #007aff;">${dist.suggestion || 0}</div>
+                    <h3>中立評論</h3>
+                    <div class="number" style="color: #ff9500;">${dist.neutral || 0}</div>
                 </div>
                 <div class="stat-card">
                     <h3>總評論數</h3>
@@ -484,7 +484,6 @@
 
         function displayCharts(data) {
             const chartsContainer = document.getElementById('chartsContainer');
-            
             chartsContainer.innerHTML = `
                 <div class="chart-box">
                     <h3>情感分佈</h3>
@@ -509,22 +508,20 @@
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['正面', '負面', '建議'],
+                    labels: ['正面', '負面', '中立', '建議'],
                     datasets: [{
                         data: [
                             distribution.positive || 0,
                             distribution.negative || 0,
+                            distribution.neutral || 0,
                             distribution.suggestion || 0
                         ],
-                        backgroundColor: ['#34c759', '#ff3b30', '#007aff'],
+                        backgroundColor: ['#34c759', '#ff3b30', '#ff9500', '#007aff'],
                         borderWidth: 2,
                         borderColor: '#fff'
                     }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
         }
 
@@ -538,13 +535,7 @@
                     labels: ['🔴 緊急', '🟠 中等', '🔵 普通', '🟢 低', '🟣 最低'],
                     datasets: [{
                         label: '評論數',
-                        data: [
-                            distribution['1'] || 0,
-                            distribution['2'] || 0,
-                            distribution['3'] || 0,
-                            distribution['4'] || 0,
-                            distribution['5'] || 0
-                        ],
+                        data: [distribution['1'] || 0, distribution['2'] || 0, distribution['3'] || 0, distribution['4'] || 0, distribution['5'] || 0],
                         backgroundColor: ['#ff3b30', '#ff9500', '#007aff', '#34c759', '#a2845d'],
                         borderRadius: 5
                     }]
@@ -558,66 +549,105 @@
             });
         }
 
-        function displayReviews(data) {
-            const reviewsContainer = document.getElementById('reviewsContainer');
+        function filterAndSort() {
+            const keyword = document.getElementById('keywordFilter').value.toLowerCase();
+            const sort = document.getElementById('sortSelect').value;
+
+            let filtered = currentResults.filter(r => 
+                r.content.toLowerCase().includes(keyword) || r.title.toLowerCase().includes(keyword)
+            );
+
+            if (sort === 'priority') {
+                filtered.sort((a, b) => a.priority - b.priority);
+            } else if (sort === 'sentiment') {
+                const sentimentOrder = { negative: 0, suggestion: 1, neutral: 2, positive: 3 };
+                filtered.sort((a, b) => sentimentOrder[a.sentiment] - sentimentOrder[b.sentiment]);
+            }
+
+            displayReviews(filtered);
+        }
+
+        function displayReviews(reviews) {
+            const container = document.getElementById('reviewsContainer');
             
-            if (data.reviews.length === 0) {
-                reviewsContainer.innerHTML = '<p style="text-align: center; color: #999;">沒有評論</p>';
+            if (reviews.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">沒有符合條件的評論</p>';
                 return;
             }
 
-            const reviewsHTML = data.reviews.map(review => {
-                const sentimentBadgeClass = `badge-${review.sentiment}`;
-                const sentimentLabel = SENTIMENT_LABELS[review.sentiment] || review.sentiment;
-                const priorityClass = `priority-${review.priority}`;
-                const priorityLabel = PRIORITY_LABELS[review.priority] || `優先級 ${review.priority}`;
-
-                const keywordsHTML = review.keywords.slice(0, 3).map(kw => {
-                    const cleanKw = kw.replace(/^[-+]/, '');
-                    return `<span class="keyword">${cleanKw}</span>`;
-                }).join('');
+            const reviewsHTML = reviews.map((review, idx) => {
+                const statusKey = `review-${idx}`;
+                const savedStatus = localStorage.getItem(statusKey) || 'pending';
 
                 return `
-                    <div class="review-item ${priorityClass}">
+                    <div class="review-item">
                         <div class="review-header">
-                            <div class="review-title">${escapeHtml(review.title || review.content.substring(0, 40))}</div>
-                            <span class="review-badge ${sentimentBadgeClass}">${sentimentLabel}</span>
+                            <div>
+                                <strong>${escapeHtml(review.title || review.content.substring(0, 40))}</strong>
+                                <div style="margin-top: 6px; display: flex; gap: 8px;">
+                                    <span class="sentiment-badge badge-${review.sentiment}">${SENTIMENT_LABELS[review.sentiment]}</span>
+                                    <span style="color: #555; font-weight: 600;">${PRIORITY_LABELS[review.priority]}</span>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="review-content">${escapeHtml(review.content)}</div>
-                        ${keywordsHTML ? `<div class="keywords">${keywordsHTML}</div>` : ''}
-                        <div class="review-meta">
-                            <span><strong class="priority-label">${priorityLabel}</strong></span>
-                            <span>分數: ${(review.sentiment_score * 100).toFixed(0)}%</span>
-                            <span>信心: ${(review.sentiment_confidence * 100).toFixed(0)}%</span>
+
+                        <div class="review-actions">
+                            <button class="btn-small btn-source" onclick="window.open('${review.url}', '_blank')">
+                                🔗 查看原文
+                            </button>
+                            <select class="status-select" onchange="saveReviewStatus(${idx}, this.value)">
+                                <option value="pending" ${savedStatus === 'pending' ? 'selected' : ''}>⏳ 未處理</option>
+                                <option value="processing" ${savedStatus === 'processing' ? 'selected' : ''}>⚙️ 進行中</option>
+                                <option value="done" ${savedStatus === 'done' ? 'selected' : ''}>✅ 已完成</option>
+                            </select>
+                        </div>
+
+                        <div style="font-size: 0.85em; color: #999;">
+                            信心: ${(review.sentiment_confidence * 100).toFixed(0)}% | 分數: ${(review.sentiment_score * 100).toFixed(0)}%
                         </div>
                     </div>
                 `;
             }).join('');
 
-            reviewsContainer.innerHTML = `
-                <h2>評論列表 (按優先級排序)</h2>
-                ${reviewsHTML}
-            `;
+            container.innerHTML = reviewsHTML;
+        }
+
+        function saveReviewStatus(idx, status) {
+            localStorage.setItem(`review-${idx}`, status);
+        }
+
+        function saveSearchState(data) {
+            localStorage.setItem('last-search', JSON.stringify(data));
+        }
+
+        function exportReport() {
+            const keyword = document.getElementById('keywordFilter').value;
+            const filtered = currentResults.filter(r => 
+                !keyword || r.content.toLowerCase().includes(keyword.toLowerCase())
+            );
+
+            let csv = '品牌,標題,內容,情感,優先級,處理狀態\n';
+            filtered.forEach((r, idx) => {
+                const status = localStorage.getItem(`review-${idx}`) || '未處理';
+                csv += `"${r.title || ''}","${r.content.substring(0, 50)}...","${SENTIMENT_LABELS[r.sentiment]}","${PRIORITY_LABELS[r.priority]}","${status}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `品牌監控_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
         }
 
         function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
         document.getElementById('brandName').focus();
-        
-        // Load saved state from localStorage
-        const savedState = localStorage.getItem('brand-monitor-state');
-        if (savedState) {
-            // Can load previous searches later
-        }
     </script>
 </body>
 </html>

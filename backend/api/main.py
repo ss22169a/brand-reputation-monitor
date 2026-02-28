@@ -117,9 +117,11 @@ async def analyze_reviews(request: MonitoringRequest) -> MonitoringResponse:
         # Step 1: Scrape Google search results using SerpAPI
         print(f"\n[1/3] Google 搜尋: {request.brand_name}")
         
-        api_key = os.getenv("SERPAPI_KEY")
+        api_key = os.getenv("SERPAPI_KEY") or "92534fddc4317ad9fd438f9209b2ac3a67c5f8d393bb8bb6c1d0257111191641"
         if not api_key:
             raise HTTPException(status_code=500, detail="SerpAPI 密鑰未設定")
+        
+        print(f"  使用 API Key: {api_key[:10]}...")
         
         scraper = SerpAPIScraper(brand_name=request.brand_name, api_key=api_key)
         reviews = await scraper.scrape()
@@ -138,7 +140,7 @@ async def analyze_reviews(request: MonitoringRequest) -> MonitoringResponse:
         # Step 2: Analyze sentiment and classify
         print(f"[2/3] 分析情感和分類...")
         analyzed_reviews: List[ReviewAnalysis] = []
-        sentiment_counts = {"positive": 0, "negative": 0, "suggestion": 0}
+        sentiment_counts = {"positive": 0, "negative": 0, "neutral": 0, "suggestion": 0}
         priority_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
         
         for review in reviews:
