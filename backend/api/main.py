@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapers.sample import SampleScraper
+from scrapers.dcard import DcardScraper
 from nlp.sentiment import SentimentAnalyzer, SentimentResult
 from nlp.classifier import ProblemClassifier
 
@@ -39,10 +39,10 @@ problem_classifier = None
 async def startup_event():
     """Initialize NLP models on startup"""
     global sentiment_analyzer, problem_classifier
-    print("Initializing NLP models...")
+    print("初始化 NLP 模型...")
     sentiment_analyzer = SentimentAnalyzer()
     problem_classifier = ProblemClassifier()
-    print("✓ Models initialized")
+    print("✓ 模型初始化完成")
 
 
 # Pydantic models
@@ -103,21 +103,22 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
     """
     
     if not request.brand_name or len(request.brand_name) < 2:
-        raise HTTPException(status_code=400, detail="Brand name must be at least 2 characters")
+        raise HTTPException(status_code=400, detail="品牌名稱至少需要 2 個字符")
     
     if sentiment_analyzer is None or problem_classifier is None:
-        raise HTTPException(status_code=503, detail="NLP models not initialized")
+        raise HTTPException(status_code=503, detail="NLP 模型未初始化")
     
     try:
-        # Step 1: Scrape reviews
-        print(f"\n[1/3] Scraping reviews for: {request.brand_name}")
-        scraper = SampleScraper(brand_name=request.brand_name)
+        # Step 1: Scrape reviews from Dcard
+        print(f"\n[1/3] 從 Dcard 抓取評論: {request.brand_name}")
+        scraper = DcardScraper(brand_name=request.brand_name)
         reviews = await scraper.scrape()
         reviews = reviews[:request.limit] if request.limit else reviews
         
-        print(f"✓ Found {len(reviews)} reviews")
+        print(f"✓ 找到 {len(reviews)} 篇評論")
         
         if not reviews:
+            print(f"⚠️ 找不到關於「{request.brand_name}」的評論")
             return MonitoringResponse(
                 brand_name=request.brand_name,
                 total_reviews=0,
@@ -127,7 +128,7 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
             )
         
         # Step 2: Analyze sentiment and classify
-        print(f"[2/3] Analyzing sentiment and classifying...")
+        print(f"[2/3] 分析情感和分類...")
         analyzed_reviews: List[ReviewAnalysis] = []
         sentiment_counts = {"positive": 0, "negative": 0, "neutral": 0, "suggestion": 0}
         priority_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
@@ -162,10 +163,10 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
             
             analyzed_reviews.append(analysis)
         
-        print(f"✓ Analyzed {len(analyzed_reviews)} reviews")
+        print(f"✓ 已分析 {len(analyzed_reviews)} 篇評論")
         
         # Step 3: Sort by priority
-        print(f"[3/3] Sorting by priority...")
+        print(f"[3/3] 按優先級排序...")
         analyzed_reviews.sort(key=lambda x: x.priority)
         
         return MonitoringResponse(
@@ -177,8 +178,8 @@ async def monitor_brand(request: MonitoringRequest) -> MonitoringResponse:
         )
         
     except Exception as e:
-        print(f"Error monitoring brand: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+        print(f"監控品牌時出錯: {e}")
+        raise HTTPException(status_code=500, detail=f"錯誤: {str(e)}")
 
 
 @app.get("/api/test")
