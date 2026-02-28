@@ -150,8 +150,8 @@ async def analyze_reviews(request: MonitoringRequest) -> MonitoringResponse:
             # Classify category
             classification_result = problem_classifier.classify(review.content)
             
-            # Calculate priority (1 = highest, 5 = lowest)
-            priority = _calculate_priority(sentiment_result, classification_result)
+            # Use priority from sentiment analysis (already calculated)
+            priority = sentiment_result.priority
             
             # Count sentiments and priorities
             sentiment_counts[sentiment_result.sentiment] += 1

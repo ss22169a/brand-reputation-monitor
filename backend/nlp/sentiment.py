@@ -16,6 +16,8 @@ class SentimentResult:
     score: float  # 0.0 - 1.0
     keywords: list[str] = field(default_factory=list)
     confidence: float = 0.0
+    priority: int = 4  # 1=Critical, 2=Strategic, 3=Operational, 4=Opportunities, 5=neutral
+    category: str = "neutral"  # critical, strategic, operational, opportunity
 
 
 class SentimentAnalyzer:
@@ -79,6 +81,43 @@ class SentimentAnalyzer:
             "建議": 1, "希望": 0.8, "可以": 0.5, "應該": 0.8,
             "需要": 0.7, "改進": 1, "改善": 1, "優化": 1,
             "如果": 0.5, "最好": 0.8,
+        }
+        
+        # 4 級優先級分類
+        # 1. Critical - 危機警示 (品牌形象受損)
+        self.critical_keywords = {
+            # 品質質疑
+            "壞掉": 2, "瑕疵": 1.5, "受騙": 2, "廣告不實": 2, "圖文不符": 2, "失望": 1.5,
+            # 服務衝突
+            "態度差": 1.5, "互推責任": 2, "等超久": 1.5, "投訴": 1.5, "消保官": 2, "公審": 2,
+            # 品牌誠信
+            "收割": 2, "割韭菜": 2, "公關災難": 2, "炎上": 2, "翻車": 2, "雙標": 2,
+        }
+        
+        # 2. Strategic - 情感轉向 (品牌忠誠度下滑)
+        self.strategic_keywords = {
+            # 比較競爭
+            "以前比較好": 1.5, "隔壁棚更好": 1.5, "退步了": 1.5, "變貴了": 1.5, "CP值變低": 1.5,
+            # 替代選擇
+            "有沒有推薦別家": 1.5, "跳槽": 1.5, "退坑": 1.5, "被推坑別的": 1.5,
+            # 疲乏感
+            "看膩了": 1, "沒創意": 1, "又來了": 1, "無感": 1,
+        }
+        
+        # 3. Operational - 使用痛點 (產品/流程優化)
+        self.operational_keywords = {
+            # 介面/流程
+            "找不到": 1, "卡住": 1, "很難用": 1, "跳掉": 1, "註冊不了": 1, "驗證碼沒收過": 1,
+            # 資訊落差
+            "看不懂": 1, "到底在哪裡": 1, "沒人回": 1.5, "官網沒寫": 1,
+        }
+        
+        # 4. Opportunities - 關鍵商機 (銷售轉化)
+        self.opportunity_keywords = {
+            # 購買意圖
+            "求代購": 1, "哪裡買": 1, "還有貨嗎": 1, "敲碗": 1, "想入坑": 1,
+            # 功能許願
+            "希望有": 1, "功能": 0.5, "色就好了": 1, "建議增加": 1,
         }
         
     def analyze(self, text: str) -> SentimentResult:
@@ -146,7 +185,13 @@ class SentimentAnalyzer:
         negative_score = 0.0
         suggestion_score = 0.0
         found_keywords = []
-        has_strong_negative = False  # 标记是否有强烈负面词
+        has_strong_negative = False
+        
+        # 4 級優先級計分
+        critical_score = 0.0
+        strategic_score = 0.0
+        operational_score = 0.0
+        opportunity_score = 0.0
         
         text_lower = text.lower()
         
@@ -161,7 +206,6 @@ class SentimentAnalyzer:
             if keyword in text:
                 negative_score += weight
                 found_keywords.append(f"-{keyword}")
-                # 如果有权重 >= 2 的负面词，标记为强烈负面
                 if weight >= 2:
                     has_strong_negative = True
         
@@ -170,8 +214,42 @@ class SentimentAnalyzer:
             if keyword in text:
                 suggestion_score += weight
         
+        # 計分 4 級優先級
+        for keyword, weight in self.critical_keywords.items():
+            if keyword in text:
+                critical_score += weight
+                
+        for keyword, weight in self.strategic_keywords.items():
+            if keyword in text:
+                strategic_score += weight
+                
+        for keyword, weight in self.operational_keywords.items():
+            if keyword in text:
+                operational_score += weight
+                
+        for keyword, weight in self.opportunity_keywords.items():
+            if keyword in text:
+                opportunity_score += weight
+        
         # Determine sentiment
         total_score = positive_score + negative_score + suggestion_score
+        
+        # 決定 4 級優先級
+        priority = 5  # Default: neutral
+        category = "neutral"
+        
+        if critical_score > 0:
+            priority = 1
+            category = "critical"
+        elif strategic_score > 0:
+            priority = 2
+            category = "strategic"
+        elif operational_score > 0:
+            priority = 3
+            category = "operational"
+        elif opportunity_score > 0:
+            priority = 4
+            category = "opportunity"
         
         if total_score == 0:
             sentiment = "neutral"
@@ -204,7 +282,9 @@ class SentimentAnalyzer:
             sentiment=sentiment,
             score=score,
             keywords=found_keywords[:5],  # Top 5 keywords
-            confidence=min(confidence, 0.95)
+            confidence=min(confidence, 0.95),
+            priority=priority,
+            category=category
         )
 
 
