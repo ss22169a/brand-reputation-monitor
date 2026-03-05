@@ -19,8 +19,12 @@ from scrapers.base import Review
 from scrapers.serpapi import SerpAPIScraper
 try:
     from routes.keywords import router as keywords_router
+    from routes.responses import router as responses_router
+    from routes.alerts import router as alerts_router
 except ImportError:
     from .routes.keywords import router as keywords_router
+    from .routes.responses import router as responses_router
+    from .routes.alerts import router as alerts_router
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -45,6 +49,8 @@ app.add_middleware(
 
 # Include routes
 app.include_router(keywords_router)
+app.include_router(responses_router)
+app.include_router(alerts_router)
 
 # Initialize analyzers once at startup
 sentiment_analyzer = None

@@ -762,6 +762,21 @@
             </div>
         </div>
 
+        <!-- Response Suggestion Modal -->
+        <div class="modal" id="responseSuggestionModal" onclick="if(event.target === this) closeResponseModal()">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeResponseModal()">&times;</span>
+                <h2>建議回應</h2>
+                <div id="responseSuggestionContent" style="margin: 20px 0;">
+                    <p style="color: #999;">載入中...</p>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="copyResponse()" class="btn-small" style="flex: 1; background: #007aff; color: white; border: none;">複製回應</button>
+                    <button onclick="closeResponseModal()" class="btn-small" style="flex: 1;">關閉</button>
+                </div>
+            </div>
+        </div>
+
         <div class="modal" id="helpModal" onclick="if(event.target === this) closeModal()">
             <div class="modal-content">
                 <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -1165,6 +1180,7 @@
                                 `<button class="btn-small btn-source" onclick="window.open('${review.url}', '_blank')">查看原文</button>` : 
                                 `<button class="btn-small btn-source" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(review.content.substring(0, 50))}', '_blank')">Google 搜尋</button>`
                             }
+                            <button class="btn-small" style="background: #dbeafe; color: #0066cc; border: 1px solid #0066cc;" onclick="openResponseSuggestion(${review.priority}, '${review.sentiment}', '${escapeHtml(review.content.substring(0, 50))}')">建議回應</button>
                             <select class="status-select" onchange="saveReviewStatus(${globalIdx}, this.value)">
                                 <option value="pending" ${savedStatus === 'pending' ? 'selected' : ''}>未處理</option>
                                 <option value="processing" ${savedStatus === 'processing' ? 'selected' : ''}>進行中</option>
@@ -1203,6 +1219,65 @@
 
         function closeModal() {
             document.getElementById('helpModal').classList.remove('show');
+        }
+
+        // Response Suggestion Functions
+        let currentSuggestion = '';
+
+        async function openResponseSuggestion(priority, sentiment, preview) {
+            const modal = document.getElementById('responseSuggestionModal');
+            const content = document.getElementById('responseSuggestionContent');
+            
+            modal.classList.add('show');
+            content.innerHTML = '<p style="color: #999;">載入建議回應中...</p>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/responses/suggest`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        priority: priority,
+                        sentiment: sentiment,
+                        content: preview
+                    })
+                });
+                
+                if (!response.ok) throw new Error('API Error');
+                
+                const data = await response.json();
+                currentSuggestion = data.suggested_response;
+                
+                content.innerHTML = `
+                    <div>
+                        <p style="color: #999; margin-bottom: 12px;">
+                            <strong>評論優先級：</strong> ${data.priority_label}<br>
+                            <strong>情感類型：</strong> ${SENTIMENT_LABELS[data.sentiment] || data.sentiment}
+                        </p>
+                        <div style="background: #f9f9f9; padding: 16px; border-radius: 12px; border-left: 4px solid #0071e3;">
+                            <p style="line-height: 1.6; color: #333;">${data.suggested_response}</p>
+                        </div>
+                        <p style="color: #999; font-size: 0.85em; margin-top: 12px;">
+                            💡 您可以複製並根據需要修改此回應
+                        </p>
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `<p style="color: #e74c3c;">無法取得建議回應: ${error.message}</p>`;
+            }
+        }
+
+        function copyResponse() {
+            if (!currentSuggestion) {
+                alert('沒有可複製的回應');
+                return;
+            }
+            navigator.clipboard.writeText(currentSuggestion).then(() => {
+                alert('已複製到剪貼板');
+            });
+        }
+
+        function closeResponseModal() {
+            document.getElementById('responseSuggestionModal').classList.remove('show');
         }
 
         // 打字機效果：標籤顏色變化

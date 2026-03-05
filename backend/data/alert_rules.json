@@ -1,0 +1,132 @@
+{
+  "rules": [
+    {
+      "id": "rule_1",
+      "name": "過去 7 天負評增長 > 30%",
+      "type": "negative_growth",
+      "enabled": true,
+      "config": {
+        "days": 7,
+        "threshold": 30
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "high"
+      },
+      "description": "檢測短期內負評數量急劇增長，預示可能的口碑危機"
+    },
+    {
+      "id": "rule_2",
+      "name": "危害指數連續 3 天 > 70",
+      "type": "risk_threshold_consecutive",
+      "enabled": true,
+      "config": {
+        "consecutive_days": 3,
+        "risk_threshold": 70
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "critical"
+      },
+      "description": "危害指數持續居高，需要立即關注和回應"
+    },
+    {
+      "id": "rule_3",
+      "name": "同主題 5 則負評",
+      "type": "same_topic_negative",
+      "enabled": true,
+      "config": {
+        "count": 5,
+        "days": 14,
+        "topic_keywords": []
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "high"
+      },
+      "description": "同一主題出現多則負評，表示新興問題需要解決"
+    },
+    {
+      "id": "rule_4",
+      "name": "競爭對手超越我們",
+      "type": "competitor_overtake",
+      "enabled": false,
+      "config": {
+        "monitor_brands": [],
+        "metric": "positive_ratio"
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "medium"
+      },
+      "description": "競爭對手在口碑評分上超過我們，需要檢視差距原因"
+    },
+    {
+      "id": "rule_5",
+      "name": "同 SKU 3 則負評（7 天內）",
+      "type": "sku_quality_issue",
+      "enabled": true,
+      "config": {
+        "count": 3,
+        "days": 7,
+        "threshold_percentage": 30
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "high"
+      },
+      "description": "特定商品在短期內被多人反映問題，可能存在批次問題"
+    },
+    {
+      "id": "rule_6",
+      "name": "特定詞彙 24h 內出現 > 5 次",
+      "type": "keyword_spike",
+      "enabled": true,
+      "config": {
+        "keywords": ["壞掉", "詐騙", "倒閉"],
+        "count": 5,
+        "hours": 24
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "critical"
+      },
+      "description": "敏感詞彙突然高頻出現，預示可能的突發事件"
+    },
+    {
+      "id": "rule_7",
+      "name": "特定地區負評集中 > 40%",
+      "type": "region_issue",
+      "enabled": false,
+      "config": {
+        "regions": [],
+        "threshold": 40
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "medium"
+      },
+      "description": "某地區的負評比例異常高，可能存在物流或售後問題"
+    },
+    {
+      "id": "rule_8",
+      "name": "Critical 優先級評論未回應 > 24h",
+      "type": "unresponded_critical",
+      "enabled": true,
+      "config": {
+        "hours": 24,
+        "priority": 1
+      },
+      "notification": {
+        "channels": ["dashboard"],
+        "priority": "critical"
+      },
+      "description": "高優先級評論長時間未被回應，可能影響品牌形象"
+    }
+  ],
+  "alert_history": [],
+  "metadata": {
+    "lastUpdated": "2026-03-05 11:26:00",
+    "version": "1.0"
+  }
+}

@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>告警規則編輯器 | 品牌口碑監控系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-actions button {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .header-actions button:hover {
+            background: #5568d3;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .rules-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .rule-card {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 20px;
+            transition: background 0.2s;
+        }
+
+        .rule-card:hover {
+            background: #fafafa;
+        }
+
+        .rule-card:last-child {
+            border-bottom: none;
+        }
+
+        .rule-info {
+            flex: 1;
+        }
+
+        .rule-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .rule-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .rule-type {
+            background: #e8eaf6;
+            color: #3f51b5;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .rule-status {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .rule-status.enabled {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .rule-status.disabled {
+            background: #ffccbc;
+            color: #d84315;
+        }
+
+        .rule-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .rule-config {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 12px;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .rule-notification {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .notification-badge {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .rule-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-small:hover {
+            background: #f5f5f5;
+            border-color: #bbb;
+        }
+
+        .btn-toggle {
+            background: #e8f5e9;
+            border-color: #81c784;
+            color: #2e7d32;
+        }
+
+        .btn-toggle:hover {
+            background: #c8e6c9;
+        }
+
+        .btn-toggle.disabled {
+            background: #ffebee;
+            border-color: #ef5350;
+            color: #c62828;
+        }
+
+        .btn-edit {
+            background: #e3f2fd;
+            border-color: #42a5f5;
+            color: #1565c0;
+        }
+
+        .btn-edit:hover {
+            background: #bbdefb;
+        }
+
+        .btn-delete {
+            background: #ffebee;
+            border-color: #ef5350;
+            color: #c62828;
+        }
+
+        .btn-delete:hover {
+            background: #ffcdd2;
+        }
+
+        .btn-test {
+            background: #fff3e0;
+            border-color: #ffb74d;
+            color: #e65100;
+        }
+
+        .btn-test:hover {
+            background: #ffe0b2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 0;
+            font-weight: 400;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .form-actions .save {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-actions .save:hover {
+            background: #5568d3;
+        }
+
+        .form-actions .cancel {
+            background: #ddd;
+            color: #333;
+        }
+
+        .form-actions .cancel:hover {
+            background: #ccc;
+        }
+
+        .alert-history {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-history h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .alert-item.critical {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .alert-item.high {
+            border-left-color: #f39c12;
+            background: #fffaf0;
+        }
+
+        .alert-item.medium {
+            border-left-color: #3498db;
+            background: #f0f7ff;
+        }
+
+        .alert-item.test {
+            border-left-color: #999;
+            background: #f5f5f5;
+        }
+
+        .alert-message {
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .alert-time {
+            color: #999;
+            font-size: 12px;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            display: none;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            border-left: 4px solid #27ae60;
+            background: #f0f9f7;
+        }
+
+        .notification.error {
+            border-left: 4px solid #e74c3c;
+            background: #fdf7f6;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ 告警規則編輯器</h1>
+            <p>設定自動告警規則，及時發現品牌口碑異常</p>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="number" id="stat-total">0</div>
+                    <div class="label">總規則數</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-enabled">0</div>
+                    <div class="label">已啟用</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-disabled">0</div>
+                    <div class="label">已停用</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-alerts">0</div>
+                    <div class="label">最近警報</div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button onclick="openNewRuleModal()">新增規則</button>
+                <button onclick="loadRules()" style="background: #999;">刷新</button>
+                <button onclick="clearAlertHistory()" style="background: #f39c12;">清除歷史</button>
+            </div>
+        </div>
+
+        <div class="rules-list" id="rulesContainer">
+            <div class="loading">載入規則中...</div>
+        </div>
+
+        <!-- Alert History -->
+        <div class="alert-history">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>最近警報（最新 20 條）</h2>
+                <button onclick="refreshAlertHistory()" class="btn-small">刷新</button>
+            </div>
+            <div id="alertHistoryContainer">
+                <div class="empty-state">暫無警報</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rule Edit Modal -->
+    <div class="modal" id="ruleModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">新增規則</h2>
+            
+            <form id="ruleForm" onsubmit="saveRule(event)">
+                <div class="form-group">
+                    <label>規則 ID</label>
+                    <input type="text" id="ruleId" required placeholder="例: rule_1">
+                </div>
+
+                <div class="form-group">
+                    <label>規則名稱</label>
+                    <input type="text" id="ruleName" required placeholder="例: 過去 7 天負評增長 > 30%">
+                </div>
+
+                <div class="form-group">
+                    <label>規則類型</label>
+                    <select id="ruleType" required onchange="updateConfigFields()">
+                        <option value="">選擇規則類型...</option>
+                        <option value="negative_growth">負評增長</option>
+                        <option value="risk_threshold_consecutive">危害指數</option>
+                        <option value="same_topic_negative">同主題負評</option>
+                        <option value="competitor_overtake">競爭對手超越</option>
+                        <option value="sku_quality_issue">SKU 品質問題</option>
+                        <option value="keyword_spike">詞彙突增</option>
+                        <option value="region_issue">地區問題</option>
+                        <option value="unresponded_critical">未回應評論</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea id="ruleDescription" placeholder="說明此規則的用途和觸發條件..."></textarea>
+                </div>
+
+                <div id="configFields" class="form-group"></div>
+
+                <div class="form-group">
+                    <label>通知方式</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="notifyDashboard" checked> 儀表板</label>
+                        <label><input type="checkbox" id="notifyEmail"> Email</label>
+                        <label><input type="checkbox" id="notifyPush"> 推播</label>
+                        <label><input type="checkbox" id="notifySMS"> 短信</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>優先級</label>
+                    <select id="rulePriority" required>
+                        <option value="low">低</option>
+                        <option value="medium" selected>中</option>
+                        <option value="high">高</option>
+                        <option value="critical">緊急</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><input type="checkbox" id="ruleEnabled" checked> 啟用此規則</label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="save">保存規則</button>
+                    <button type="button" class="cancel" onclick="closeRuleModal()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/alerts';
+        let currentRuleId = null;
+        let allRules = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRules();
+            loadAlertStats();
+            loadAlertHistory();
+            setInterval(loadAlertHistory, 10000); // Refresh every 10s
+        });
+
+        function loadRules() {
+            fetch(`${API_BASE}/rules`)
+                .then(response => response.json())
+                .then(data => {
+                    allRules = data;
+                    renderRules();
+                    loadAlertStats();
+                })
+                .catch(error => {
+                    showNotification('載入規則失敗: ' + error.message, 'error');
+                    console.error('Error:', error);
+                });
+        }
+
+        function renderRules() {
+            const container = document.getElementById('rulesContainer');
+            
+            if (allRules.length === 0) {
+                container.innerHTML = '<div class="empty-state">還沒有規則，點擊「新增規則」來建立</div>';
+                return;
+            }
+
+            container.innerHTML = allRules.map(rule => `
+                <div class="rule-card">
+                    <div class="rule-info">
+                        <div class="rule-header">
+                            <span class="rule-name">${rule.name}</span>
+                            <span class="rule-type">${rule.type}</span>
+                            <span class="rule-status ${rule.enabled ? 'enabled' : 'disabled'}">
+                                ${rule.enabled ? '啟用' : '停用'}
+                            </span>
+                        </div>
+                        <p class="rule-description">${rule.description}</p>
+                        <div class="rule-config">
+                            <strong>配置：</strong> ${JSON.stringify(rule.config).substring(0, 150)}...
+                        </div>
+                        <div class="rule-notification">
+                            <span>通知方式：</span>
+                            ${rule.notification.channels.map(ch => `<span class="notification-badge">${ch}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="rule-actions">
+                        <button class="btn-small btn-toggle ${!rule.enabled ? 'disabled' : ''}" 
+                            onclick="toggleRule('${rule.id}')">
+                            ${rule.enabled ? '停用' : '啟用'}
+                        </button>
+                        <button class="btn-small btn-test" onclick="testRule('${rule.id}')">測試</button>
+                        <button class="btn-small btn-edit" onclick="editRule('${rule.id}')">編輯</button>
+                        <button class="btn-small btn-delete" onclick="deleteRule('${rule.id}')">刪除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openNewRuleModal() {
+            currentRuleId = null;
+            document.getElementById('modalTitle').textContent = '新增規則';
+            document.getElementById('ruleForm').reset();
+            document.getElementById('ruleId').value = `rule_${Date.now()}`;
+            document.getElementById('ruleModal').classList.add('show');
+            updateConfigFields();
+        }
+
+        function editRule(ruleId) {
+            const rule = allRules.find(r => r.id === ruleId);
+            if (!rule) return;
+
+            currentRuleId = ruleId;
+            document.getElementById('modalTitle').textContent = `編輯規則：${rule.name}`;
+            document.getElementById('ruleId').value = rule.id;
+            document.getElementById('ruleName').value = rule.name;
+            document.getElementById('ruleType').value = rule.type;
+            document.getElementById('ruleDescription').value = rule.description;
+            document.getElementById('rulePriority').value = rule.notification.priority;
+            document.getElementById('ruleEnabled').checked = rule.enabled;
+
+            // Set notification checkboxes
+            document.getElementById('notifyDashboard').checked = rule.notification.channels.includes('dashboard');
+            document.getElementById('notifyEmail').checked = rule.notification.channels.includes('email');
+            document.getElementById('notifyPush').checked = rule.notification.channels.includes('push');
+            document.getElementById('notifySMS').checked = rule.notification.channels.includes('sms');
+
+            updateConfigFields();
+            document.getElementById('ruleModal').classList.add('show');
+        }
+
+        function closeRuleModal() {
+            document.getElementById('ruleModal').classList.remove('show');
+        }
+
+        function updateConfigFields() {
+            const type = document.getElementById('ruleType').value;
+            const container = document.getElementById('configFields');
+
+            const configs = {
+                'negative_growth': `
+                    <div class="form-row">
+                        <div><label>時間窗口（天）</label><input type="number" id="configDays" value="7" min="1" max="90"></div>
+                        <div><label>增長閾值（%）</label><input type="number" id="configThreshold" value="30" min="0" max="100"></div>
+                    </div>
+                `,
+                'risk_threshold_consecutive': `
+                    <div class="form-row">
+                        <div><label>連續天數</label><input type="number" id="configConsecutiveDays" value="3" min="1" max="30"></div>
+                        <div><label>危害指數</label><input type="number" id="configRiskThreshold" value="70" min="0" max="100"></div>
+                    </div>
+                `,
+                'same_topic_negative': `
+                    <div class="form-row">
+                        <div><label>評論數</label><input type="number" id="configCount" value="5" min="1" max="50"></div>
+                        <div><label>時間窗口（天）</label><input type="number" id="configDays" value="14" min="1" max="90"></div>
+                    </div>
+                `,
+                'sku_quality_issue': `
+                    <div class="form-row">
+                        <div><label>評論數</label><input type="number" id="configCount" value="3" min="1" max="50"></div>
+                        <div><label>時間窗口（天）</label><input type="number" id="configDays" value="7" min="1" max="90"></div>
+                    </div>
+                `,
+                'keyword_spike': `
+                    <div><label>監控關鍵詞（逗號分隔）</label>
+                    <textarea id="configKeywords" placeholder="壞掉, 詐騙, 倒閉"></textarea></div>
+                    <div class="form-row">
+                        <div><label>出現次數</label><input type="number" id="configCount" value="5" min="1" max="100"></div>
+                        <div><label>時間窗口（小時）</label><input type="number" id="configHours" value="24" min="1" max="720"></div>
+                    </div>
+                `,
+                'unresponded_critical': `
+                    <div><label>未回應時間（小時）</label>
+                    <input type="number" id="configHours" value="24" min="1" max="168"></div>
+                `,
+                'default': `<p style="color: #999;">此規則無需額外配置</p>`
+            };
+
+            container.innerHTML = configs[type] || configs['default'];
+        }
+
+        async function saveRule(event) {
+            event.preventDefault();
+
+            const channels = [];
+            if (document.getElementById('notifyDashboard').checked) channels.push('dashboard');
+            if (document.getElementById('notifyEmail').checked) channels.push('email');
+            if (document.getElementById('notifyPush').checked) channels.push('push');
+            if (document.getElementById('notifySMS').checked) channels.push('sms');
+
+            const rule = {
+                id: document.getElementById('ruleId').value,
+                name: document.getElementById('ruleName').value,
+                type: document.getElementById('ruleType').value,
+                enabled: document.getElementById('ruleEnabled').checked,
+                description: document.getElementById('ruleDescription').value,
+                config: {},
+                notification: {
+                    channels: channels.length > 0 ? channels : ['dashboard'],
+                    priority: document.getElementById('rulePriority').value
+                }
+            };
+
+            // Collect config fields
+            const configDays = document.getElementById('configDays');
+            const configThreshold = document.getElementById('configThreshold');
+            const configConsecutiveDays = document.getElementById('configConsecutiveDays');
+            const configRiskThreshold = document.getElementById('configRiskThreshold');
+            const configCount = document.getElementById('configCount');
+            const configHours = document.getElementById('configHours');
+            const configKeywords = document.getElementById('configKeywords');
+
+            if (configDays) rule.config.days = parseInt(configDays.value);
+            if (configThreshold) rule.config.threshold = parseInt(configThreshold.value);
+            if (configConsecutiveDays) rule.config.consecutive_days = parseInt(configConsecutiveDays.value);
+            if (configRiskThreshold) rule.config.risk_threshold = parseInt(configRiskThreshold.value);
+            if (configCount) rule.config.count = parseInt(configCount.value);
+            if (configHours) rule.config.hours = parseInt(configHours.value);
+            if (configKeywords) rule.config.keywords = configKeywords.value.split(',').map(k => k.trim()).filter(k => k);
+
+            try {
+                const url = currentRuleId ? `${API_BASE}/rules/${currentRuleId}` : `${API_BASE}/rules`;
+                const method = currentRuleId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(rule)
+                });
+
+                if (response.ok) {
+                    closeRuleModal();
+                    loadRules();
+                    showNotification(`規則${currentRuleId ? '已更新' : '已新增'}`, 'success');
+                } else {
+                    const error = await response.json();
+                    showNotification(`錯誤: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showNotification('保存失敗: ' + error.message, 'error');
+            }
+        }
+
+        function toggleRule(ruleId) {
+            fetch(`${API_BASE}/rules/${ruleId}/toggle`, {method: 'POST'})
+                .then(response => response.json())
+                .then(() => {
+                    loadRules();
+                    showNotification('規則已切換', 'success');
+                })
+                .catch(error => showNotification('切換失敗: ' + error.message, 'error'));
+        }
+
+        function testRule(ruleId) {
+            fetch(`${API_BASE}/test/${ruleId}`, {method: 'POST'})
+                .then(response => response.json())
+                .then(() => {
+                    loadAlertHistory();
+                    showNotification('測試警報已觸發', 'success');
+                })
+                .catch(error => showNotification('測試失敗: ' + error.message, 'error'));
+        }
+
+        function deleteRule(ruleId) {
+            if (!confirm('確定刪除此規則？')) return;
+
+            fetch(`${API_BASE}/rules/${ruleId}`, {method: 'DELETE'})
+                .then(response => response.json())
+                .then(() => {
+                    loadRules();
+                    showNotification('規則已刪除', 'success');
+                })
+                .catch(error => showNotification('刪除失敗: ' + error.message, 'error'));
+        }
+
+        function loadAlertStats() {
+            fetch(`${API_BASE}/stats`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('stat-total').textContent = data.total_rules || 0;
+                    document.getElementById('stat-enabled').textContent = data.enabled_rules || 0;
+                    document.getElementById('stat-disabled').textContent = data.disabled_rules || 0;
+                    document.getElementById('stat-alerts').textContent = data.recent_alerts_count || 0;
+                })
+                .catch(error => console.error('Error loading stats:', error));
+        }
+
+        function loadAlertHistory() {
+            fetch(`${API_BASE}/history?limit=20`)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('alertHistoryContainer');
+                    
+                    if (data.length === 0) {
+                        container.innerHTML = '<div class="empty-state">暫無警報</div>';
+                        return;
+                    }
+
+                    container.innerHTML = data.reverse().map(alert => `
+                        <div class="alert-item ${alert.severity}">
+                            <div class="alert-message">
+                                <strong>${alert.rule_id}：</strong> ${alert.message}
+                            </div>
+                            <div class="alert-time">${new Date(alert.timestamp).toLocaleString('zh-TW')}</div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => console.error('Error loading history:', error));
+        }
+
+        function refreshAlertHistory() {
+            loadAlertHistory();
+            showNotification('已刷新', 'success');
+        }
+
+        function clearAlertHistory() {
+            if (!confirm('確定清除所有警報歷史？')) return;
+
+            fetch(`${API_BASE}/history`, {method: 'DELETE'})
+                .then(response => response.json())
+                .then(() => {
+                    loadAlertHistory();
+                    showNotification('警報歷史已清除', 'success');
+                })
+                .catch(error => showNotification('清除失敗: ' + error.message, 'error'));
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification show ${type}`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeRuleModal();
+        });
+    </script>
+</body>
+</html>
