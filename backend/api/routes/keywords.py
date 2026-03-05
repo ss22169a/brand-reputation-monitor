@@ -277,7 +277,7 @@ async def get_stats():
     stats = {}
     total_keywords = 0
     
-    for category in ['CRITICAL', 'STRATEGIC', 'OPERATIONAL', 'OPPORTUNITIES']:
+    for category in ['CRITICAL', 'STRATEGIC', 'OPERATIONAL', 'OPPORTUNITIES', 'EXCLUDED']:
         if category in keywords:
             count = len(keywords[category]['keywords'])
             stats[category] = count
