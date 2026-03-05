@@ -738,6 +738,7 @@
                 
                 <div class="controls">
                     <input type="text" id="keywordFilter" class="filter-input" placeholder="過濾關鍵詞…">
+                    <input type="text" id="domainFilter" class="filter-input" placeholder="過濾域名 (google.com, dcard.cc)…">
                     <select id="sortSelect" class="sort-select">
                         <option value="priority">按嚴重性排序</option>
                         <option value="impact">按危害指數排序</option>
@@ -836,6 +837,7 @@
         });
 
         document.getElementById('keywordFilter').addEventListener('input', filterAndSort);
+        document.getElementById('domainFilter').addEventListener('input', filterAndSort);
         document.getElementById('sortSelect').addEventListener('change', filterAndSort);
 
         // 情感分类切换
@@ -907,22 +909,33 @@
         function displayStats(data, positiveRatio) {
             const statsGrid = document.getElementById('statsGrid');
             const dist = data.sentiment_distribution;
+            const priority_dist = data.priority_distribution;
+
+            // 根據優先級分佈計算危險指數（而不是情感分佈）
+            const critical = priority_dist['1'] || 0;
+            const strategic = priority_dist['2'] || 0;
+            const operational = priority_dist['3'] || 0;
+            const opportunities = priority_dist['4'] || 0;
+            const total = data.total_reviews;
+            
+            // 危害分數：Critical 權重 3，Strategic 權重 2，Operational 權重 1
+            const riskScore = (critical * 3 + strategic * 2 + operational * 1) / Math.max(total, 1);
 
             let riskClass, riskText;
-            if (positiveRatio >= 0.6) {
-                riskClass = 'risk-excellent';
-                riskText = '優秀';
-            } else if (positiveRatio <= 0.4) {
+            if (riskScore >= 1.5) {
                 riskClass = 'risk-danger';
                 riskText = '危險';
-            } else {
+            } else if (riskScore >= 0.8) {
                 riskClass = 'risk-normal';
                 riskText = '一般';
+            } else {
+                riskClass = 'risk-excellent';
+                riskText = '優秀';
             }
 
             statsGrid.innerHTML = `
                 <div class="stat-card">
-                    <h3>危險指數 <span class="info-btn">?<span class="tooltip">正面比例：優秀≥60% 一般40% 危險<40%</span></span></h3>
+                    <h3>危險指數 <span class="info-btn">?<span class="tooltip">根據優先級分佈：Critical*3 + Strategic*2 + Operational*1</span></span></h3>
                     <div class="risk-badge ${riskClass}">${riskText}</div>
                 </div>
                 <div class="stat-card">
@@ -1013,13 +1026,24 @@
 
         function filterAndSort() {
             const keyword = document.getElementById('keywordFilter').value.toLowerCase();
+            const domainFilter = document.getElementById('domainFilter').value.toLowerCase();
             const sort = document.getElementById('sortSelect').value;
             const sentimentFilter = document.querySelector('.sentiment-btn.active')?.dataset.filter || 'all';
 
             let filtered = currentResults.filter(r => {
                 const keywordMatch = r.content.toLowerCase().includes(keyword) || r.title.toLowerCase().includes(keyword);
                 const sentimentMatch = sentimentFilter === 'all' || r.sentiment === sentimentFilter;
-                return keywordMatch && sentimentMatch;
+                
+                // Domain filter: extract domain from URL
+                let domainMatch = true;
+                if (domainFilter) {
+                    const url = r.url || '';
+                    const urlObj = new URL(url);
+                    const domain = urlObj.hostname || '';
+                    domainMatch = domain.includes(domainFilter);
+                }
+                
+                return keywordMatch && sentimentMatch && domainMatch;
             });
 
             if (sort === 'priority') {
@@ -1110,6 +1134,16 @@
                 const globalIdx = startIdx + idx;
                 const statusKey = `review-${globalIdx}`;
                 const savedStatus = localStorage.getItem(statusKey) || 'pending';
+                
+                // 提取 domain
+                const url = review.url || '';
+                let domain = '';
+                try {
+                    const urlObj = new URL(url);
+                    domain = urlObj.hostname.replace('www.', '');
+                } catch (e) {
+                    domain = 'unknown';
+                }
 
                 return `
                     <div class="review-item">
@@ -1118,6 +1152,7 @@
                                 <div style="margin-bottom: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                                     <span class="priority-pill priority-${review.priority}">${PRIORITY_LABELS[review.priority]}</span>
                                     <span class="sentiment-badge badge-${review.sentiment}">${SENTIMENT_LABELS[review.sentiment]}</span>
+                                    <span style="font-size: 0.85em; color: #999; background: #f0f0f0; padding: 4px 12px; border-radius: 12px;">${escapeHtml(domain)}</span>
                                 </div>
                                 <strong style="font-size: 1.05em; display: block;">${escapeHtml(review.title || review.content.substring(0, 40))}</strong>
                             </div>

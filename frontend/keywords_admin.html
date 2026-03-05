@@ -143,6 +143,10 @@
             background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
         }
 
+        .category-header.excluded {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
         .category-header h2 {
             font-size: 18px;
             margin-bottom: 5px;
@@ -226,6 +230,10 @@
 
         .keyword-item.opportunities {
             border-left-color: #27ae60;
+        }
+
+        .keyword-item.excluded {
+            border-left-color: #95a5a6;
         }
 
         .keyword-word {
@@ -448,6 +456,10 @@
                     <div class="number" id="stat-opportunities">0</div>
                     <div class="label">商機</div>
                 </div>
+                <div class="stat-box">
+                    <div class="number" id="stat-excluded">0</div>
+                    <div class="label">排除詞</div>
+                </div>
             </div>
 
             <div class="search-section">
@@ -524,7 +536,8 @@
                 { key: 'CRITICAL', label: '🚨 危機警示', desc: '品牌形象受損', color: 'critical' },
                 { key: 'STRATEGIC', label: '📉 情感轉向', desc: '品牌忠誠度下滑', color: 'strategic' },
                 { key: 'OPERATIONAL', label: '⚙️ 使用痛點', desc: '產品/流程優化', color: 'operational' },
-                { key: 'OPPORTUNITIES', label: '🎯 關鍵商機', desc: '銷售轉化', color: 'opportunities' }
+                { key: 'OPPORTUNITIES', label: '🎯 關鍵商機', desc: '銷售轉化', color: 'opportunities' },
+                { key: 'EXCLUDED', label: '🚫 排除詞彙', desc: '過濾噪音', color: 'excluded' }
             ];
 
             categories.forEach(cat => {
@@ -689,6 +702,7 @@
                     document.getElementById('stat-strategic').textContent = data.STRATEGIC || 0;
                     document.getElementById('stat-operational').textContent = data.OPERATIONAL || 0;
                     document.getElementById('stat-opportunities').textContent = data.OPPORTUNITIES || 0;
+                    document.getElementById('stat-excluded').textContent = data.EXCLUDED || 0;
                     document.getElementById('lastUpdated').textContent = data.lastUpdated || '未知';
                 })
                 .catch(error => console.error('Stats error:', error));
